@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Activity, User, LogOut, Menu, X, LayoutDashboard, Brain, Heart, Stethoscope } from "lucide-react";
+import { Activity, User, LogOut, Menu, X } from "lucide-react";
 import { apiRequest } from "../utils/api";
 
 export default function Navbar() {
@@ -54,22 +54,18 @@ export default function Navbar() {
           <span className="logo-text">Tele<span className="gradient-txt">Med</span></span>
         </Link>
 
-        {/* Desktop Button Navigation */}
+        {/* Desktop Navigation */}
         <nav className="nav-links desktop-only">
           <Link href="/" className={`nav-link ${pathname === "/" ? "active" : ""}`}>
-            <LayoutDashboard size={15} />
             Overview
           </Link>
           <Link href="/symptoms" className={`nav-link ${pathname === "/symptoms" ? "active" : ""}`}>
-            <Brain size={15} />
             AI Symptom Checker
           </Link>
           <Link href="/patient" className={`nav-link ${pathname.startsWith("/patient") ? "active" : ""}`}>
-            <Heart size={15} />
             Patient Portal
           </Link>
           <Link href="/doctor" className={`nav-link ${pathname.startsWith("/doctor") ? "active" : ""}`}>
-            <Stethoscope size={15} />
             Doctor Portal
           </Link>
         </nav>
@@ -120,7 +116,6 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className={`mobile-nav-link ${pathname === "/" ? "active" : ""}`}
             >
-              <LayoutDashboard size={16} />
               Overview
             </Link>
             <Link 
@@ -128,7 +123,6 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className={`mobile-nav-link ${pathname === "/symptoms" ? "active" : ""}`}
             >
-              <Brain size={16} />
               AI Symptom Checker
             </Link>
             <Link 
@@ -136,7 +130,6 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className={`mobile-nav-link ${pathname.startsWith("/patient") ? "active" : ""}`}
             >
-              <Heart size={16} />
               Patient Portal
             </Link>
             <Link 
@@ -144,7 +137,6 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className={`mobile-nav-link ${pathname.startsWith("/doctor") ? "active" : ""}`}
             >
-              <Stethoscope size={16} />
               Doctor Portal
             </Link>
             
@@ -234,40 +226,36 @@ export default function Navbar() {
           -webkit-text-fill-color: transparent;
         }
         
-        /* Desktop Button Navigation styling */
+        /* Desktop Navigation & Links styling */
         .nav-links {
           display: flex;
           align-items: center;
-          gap: 6px;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--border-color);
-          padding: 6px;
-          border-radius: var(--radius-full);
-          backdrop-filter: blur(10px);
+          gap: 12px;
         }
         .nav-link {
           color: var(--text-muted);
           text-decoration: none;
           font-family: var(--font-heading);
-          font-size: 0.88rem;
+          font-size: 0.95rem;
           font-weight: 600;
-          transition: var(--transition-fast);
+          transition: all 0.2s ease-in-out;
           padding: 8px 16px;
-          border-radius: var(--radius-full);
-          display: flex;
+          border-radius: var(--radius-sm);
+          display: inline-flex;
           align-items: center;
-          gap: 8px;
           border: 1px solid transparent;
+          background: transparent;
         }
         .nav-link:hover {
           color: var(--text-main);
           background: rgba(255, 255, 255, 0.04);
+          border-color: var(--border-color);
         }
         .nav-link.active {
           color: var(--secondary);
           background: var(--secondary-glow);
-          border-color: rgba(14, 165, 233, 0.2);
-          box-shadow: 0 2px 10px rgba(14, 165, 233, 0.05);
+          border-color: rgba(14, 165, 233, 0.15);
+          font-weight: 700;
         }
 
         .auth-section {
