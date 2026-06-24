@@ -17,7 +17,12 @@ class Settings(BaseSettings):
     # AI Config
     GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
 
+    # Razorpay Config
+    RAZORPAY_KEY_ID: Optional[str] = os.getenv("RAZORPAY_KEY_ID")
+    RAZORPAY_KEY_SECRET: Optional[str] = os.getenv("RAZORPAY_KEY_SECRET")
+
     class Config:
         case_sensitive = True
+        env_file = ".env"
 
 settings = Settings()

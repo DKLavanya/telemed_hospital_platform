@@ -382,3 +382,83 @@ def get_symptom_analysis(
         age=input_data.age,
         gender=input_data.gender
     )
+
+
+# --- RAZORPAY BILLING ENDPOINTS ---
+
+@router.post("/billing/{bill_id}/razorpay-order", response_model=schemas.RazorpayOrderResponse)
+def create_razorpay_order(
+    bill_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    bill = db.query(models.Billing).filter(models.Billing.id == bill_id).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+        
+    if current_user.role == models.UserRole.PATIENT and bill.patient_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        raise HTTPException(status_code=500, detail="Razorpay is not configured on the server")
+        
+    try:
+        import razorpay
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        
+        # Razorpay expects amount in paise (1 INR = 100 paise)
+        amount_paise = int(bill.amount * 100)
+        
+        order_data = {
+            "amount": amount_paise,
+            "currency": "INR",
+            "receipt": f"receipt_bill_{bill.id}",
+            "payment_capture": 1
+        }
+        
+        razorpay_order = client.order.create(data=order_data)
+        
+        return {
+            "order_id": razorpay_order["id"],
+            "amount": bill.amount,
+            "currency": "INR",
+            "key_id": settings.RAZORPAY_KEY_ID
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to create Razorpay order: {str(e)}")
+
+@router.post("/billing/verify-razorpay", response_model=schemas.BillingResponse)
+def verify_razorpay_payment(
+    payload: schemas.RazorpayVerifyPayload,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    bill = db.query(models.Billing).filter(models.Billing.id == payload.bill_id).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+        
+    if current_user.role == models.UserRole.PATIENT and bill.patient_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
+    try:
+        import razorpay
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        
+        params_dict = {
+            'razorpay_order_id': payload.razorpay_order_id,
+            'razorpay_payment_id': payload.razorpay_payment_id,
+            'razorpay_signature': payload.razorpay_signature
+        }
+        
+        client.utility.verify_payment_signature(params_dict)
+        
+        # Mark bill as paid
+        bill.status = "paid"
+        bill.payment_method = "razorpay"
+        bill.payment_date = datetime.datetime.utcnow()
+        
+        db.commit()
+        db.refresh(bill)
+        return bill
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Payment signature verification failed")

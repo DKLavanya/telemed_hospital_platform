@@ -119,30 +119,87 @@ export default function PatientDashboard() {
     }, 250);
   };
 
-  const handlePayBill = async () => {
-    if (!payingBill) return;
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleInitiateRazorpay = async (bill: any) => {
+    setError("");
+    setPayingBill(bill);
     setPayingLoading(true);
+    setPaymentSuccess(false);
 
     try {
-      await apiRequest(`/billing/${payingBill.id}`, "PUT", {
-        status: "paid",
-        payment_method: "card"
-      });
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error("Razorpay SDK failed to load. Are you offline?");
+      }
 
-      setPaymentSuccess(true);
-      triggerConfetti();
+      const orderDetails = await apiRequest(`/billing/${bill.id}/razorpay-order`, "POST");
+      
+      const options = {
+        key: orderDetails.key_id,
+        amount: orderDetails.amount * 100, // paise
+        currency: orderDetails.currency,
+        name: "TeleMed Platform",
+        description: `Invoice Payment for ${bill.invoice_number}`,
+        order_id: orderDetails.order_id,
+        handler: async function (response: any) {
+          try {
+            setPayingLoading(true);
+            await apiRequest("/billing/verify-razorpay", "POST", {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              bill_id: bill.id
+            });
 
-      // Reload bills
-      const updatedBills = await apiRequest("/billing");
-      setBills(updatedBills);
+            setPaymentSuccess(true);
+            triggerConfetti();
 
-      setTimeout(() => {
-        setPayingBill(null);
-        setPaymentSuccess(false);
-      }, 3000);
+            const updatedBills = await apiRequest("/billing");
+            setBills(updatedBills);
+
+            setTimeout(() => {
+              setPayingBill(null);
+              setPaymentSuccess(false);
+            }, 3000);
+          } catch (err: any) {
+            setError(err.message || "Payment verification failed.");
+          } finally {
+            setPayingLoading(false);
+          }
+        },
+        prefill: {
+          name: currentUser.name,
+          email: currentUser.email,
+        },
+        theme: {
+          color: "#6366f1"
+        },
+        modal: {
+          ondismiss: function() {
+            setPayingBill(null);
+            setPayingLoading(false);
+          }
+        }
+      };
+
+      const paymentObject = new (window as any).Razorpay(options);
+      paymentObject.open();
+
     } catch (err: any) {
-      setError(err.message || "Payment processing failed.");
-    } finally {
+      setError(err.message || "Failed to initiate payment.");
       setPayingLoading(false);
     }
   };
@@ -475,7 +532,7 @@ export default function PatientDashboard() {
                         <td>
                           {bill.status === "pending" ? (
                             <button 
-                              onClick={() => setPayingBill(bill)} 
+                              onClick={() => handleInitiateRazorpay(bill)} 
                               className="btn btn-primary btn-pay-now"
                             >
                               Pay Invoice
@@ -497,64 +554,33 @@ export default function PatientDashboard() {
 
       </div>
 
-      {/* Payment checkout modal popup */}
+      {/* Razorpay checkout modal status */}
       {payingBill && (
         <div className="modal-backdrop">
-          <div className="glass-panel modal-card animate-slide-up">
+          <div className="glass-panel modal-card animate-slide-up" style={{ textAlign: "center" }}>
             <h3>Invoice Payment</h3>
-            <p className="modal-sub">Simulating secure billing gateway checkout</p>
+            <p className="modal-sub">{payingBill.invoice_number}</p>
             
             {paymentSuccess ? (
               <div className="payment-success-msg">
                 <CheckCircle2 className="success-glowing-icon" size={48} />
                 <h4>Payment Successful!</h4>
-                <p>Invoice status updated. Confetti triggered.</p>
+                <p>Invoice marked as paid. Confetti triggered.</p>
+              </div>
+            ) : error ? (
+              <div className="payment-modal-body">
+                <AlertCircle className="alert-icon" size={48} style={{ color: 'var(--danger)', margin: '0 auto' }} />
+                <h4 style={{ color: 'var(--danger)', marginTop: '12px' }}>Payment Failed</h4>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{error}</p>
+                <button onClick={() => { setPayingBill(null); setError(""); }} className="btn btn-secondary" style={{ marginTop: '16px' }}>
+                  Close Window
+                </button>
               </div>
             ) : (
-              <div className="payment-modal-body">
-                <div className="invoice-meta">
-                  <span>Bill to Pay:</span>
-                  <strong>{payingBill.invoice_number}</strong>
-                </div>
-                <div className="invoice-meta">
-                  <span>Grand Total:</span>
-                  <strong className="invoice-amount">${payingBill.amount.toFixed(2)}</strong>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Cardholder Name</label>
-                  <input type="text" defaultValue={currentUser.name} className="form-input" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Card Number</label>
-                  <input type="text" placeholder="•••• •••• •••• ••••" defaultValue="4111 2222 3333 4444" className="form-input" />
-                </div>
-                <div className="form-row-grid">
-                  <div className="form-group">
-                    <label className="form-label">Expiry</label>
-                    <input type="text" placeholder="MM/YY" defaultValue="12/28" className="form-input" />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">CVC</label>
-                    <input type="text" placeholder="•••" defaultValue="123" className="form-input" />
-                  </div>
-                </div>
-
-                <div className="modal-actions">
-                  <button 
-                    onClick={() => setPayingBill(null)} 
-                    className="btn btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handlePayBill} 
-                    disabled={payingLoading} 
-                    className="btn btn-primary"
-                  >
-                    {payingLoading ? "Processing payment..." : `Pay $${payingBill.amount.toFixed(2)}`}
-                  </button>
-                </div>
+              <div className="payment-success-msg">
+                <RefreshCw className="spinner-icon" size={32} />
+                <h4>Opening Razorpay Checkout...</h4>
+                <p>Please complete your payment in the secure popup window.</p>
               </div>
             )}
           </div>

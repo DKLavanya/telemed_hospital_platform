@@ -183,3 +183,16 @@ class AIAnalysisResponse(BaseModel):
     recommendations: List[str]
     urgency_level: str # Low, Medium, High, Emergency
     disclaimer: str
+
+# --- Razorpay Schemas ---
+class RazorpayOrderResponse(BaseModel):
+    order_id: str
+    amount: float
+    currency: str
+    key_id: str
+
+class RazorpayVerifyPayload(BaseModel):
+    razorpay_payment_id: str
+    razorpay_order_id: str
+    razorpay_signature: str
+    bill_id: int
