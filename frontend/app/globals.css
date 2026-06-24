@@ -206,8 +206,8 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -215,6 +215,29 @@ h1, h2, h3, h4, h5, h6 {
 .badge-pending {
   background: rgba(245, 158, 11, 0.15);
   color: var(--warning);
+}
+
+.badge-scheduled {
+  background: var(--secondary-glow);
+  color: var(--secondary);
+}
+
+.badge-active {
+  background: var(--success-glow);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.badge-completed {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.badge-cancelled {
+  background: var(--danger-glow);
+  color: var(--danger);
 }
 
 .badge-success {

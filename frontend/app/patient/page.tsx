@@ -258,9 +258,11 @@ export default function PatientDashboard() {
                       <div key={appt.id} className="appointment-card glass-card">
                         <div className="appt-header">
                           <div className="appt-doctor">
-                            <Stethoscope size={16} className="appt-icon" />
-                            <strong>{appt.doctor?.name || "Doctor"}</strong>
-                            {appt.doctor?.specialization && <span className="appt-specialty">({appt.doctor.specialization})</span>}
+                            <Stethoscope size={18} className="appt-icon" />
+                            <div className="doctor-info-text">
+                              <strong>{appt.doctor?.name || "Doctor"}</strong>
+                              {appt.doctor?.specialization && <span className="appt-specialty">{appt.doctor.specialization}</span>}
+                            </div>
                           </div>
                           <span className={`badge badge-${appt.status}`}>
                             {appt.status}
@@ -647,43 +649,69 @@ export default function PatientDashboard() {
         .appointments-list {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 20px;
         }
         .appointment-card {
-          padding: 20px;
+          padding: 24px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
         }
         .appt-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 14px;
+          margin-bottom: 16px;
         }
         .appt-doctor {
           display: flex;
           align-items: center;
-          gap: 6px;
-          font-size: 0.95rem;
+          gap: 12px;
         }
-        .appt-icon { color: var(--secondary); }
+        .doctor-info-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .appt-icon {
+          color: var(--secondary);
+          background: var(--secondary-glow);
+          padding: 6px;
+          border-radius: var(--radius-sm);
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
         .appt-specialty {
           color: var(--text-muted);
-          font-size: 0.85rem;
+          font-size: 0.78rem;
+          font-weight: 500;
         }
         .appt-body {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
+          margin-bottom: 12px;
         }
         .appt-time {
           font-size: 0.9rem;
           color: var(--text-main);
           font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         .appt-notes {
           font-size: 0.85rem;
           color: var(--text-muted);
+          background: rgba(255, 255, 255, 0.02);
+          padding: 10px 14px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--border-color);
+          margin-top: 4px;
         }
         .btn-join-call {
           margin-top: 6px;
