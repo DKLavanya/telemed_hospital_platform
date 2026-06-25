@@ -22,9 +22,7 @@ export default function ConsultationRoom() {
   const [clientId] = useState(() => `peer_${Math.random().toString(36).substr(2, 9)}`);
   
   // Chat state
-  const [messages, setMessages] = useState<any[]>([
-    { sender: "System", text: "Welcome to the encrypted WebRTC consultation room.", time: new Date().toLocaleTimeString() }
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState("");
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -33,6 +31,9 @@ export default function ConsultationRoom() {
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    setMessages([
+      { sender: "System", text: "Welcome to the encrypted WebRTC consultation room.", time: new Date().toLocaleTimeString() }
+    ]);
     startDevicesAndCall();
     return () => {
       cleanupCall();
