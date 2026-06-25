@@ -125,14 +125,6 @@ export default function ConsultationRoom() {
       console.warn("Camera/Mic access failed or STUN Server blocked. Falling back to Mock Simulation Mode.", err);
       // Fallback: We simulate a call so that the user is wowed and can test the UI cleanly!
       setCallState("simulating");
-      
-      // Simulate remote user typing or joining after 3 seconds
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev,
-          { sender: role === "doctor" ? "Patient" : "Doctor", text: `Hello! I have joined the video room.`, time: new Date().toLocaleTimeString() }
-        ]);
-      }, 2000);
     }
   };
 
