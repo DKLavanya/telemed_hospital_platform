@@ -5,7 +5,7 @@ from typing import Optional
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Advanced Hospital & Telemedicine Platform"
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkeytelemedplatform1234567890!@#")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # DB connection string (defaults to SQLite for zero-setup ease of use)
@@ -20,6 +20,15 @@ class Settings(BaseSettings):
     # Razorpay Config
     RAZORPAY_KEY_ID: Optional[str] = os.getenv("RAZORPAY_KEY_ID")
     RAZORPAY_KEY_SECRET: Optional[str] = os.getenv("RAZORPAY_KEY_SECRET")
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        if not self.SECRET_KEY:
+            import secrets
+            import logging
+            # Generate a secure random key on the fly if not provided
+            logging.warning("SECRET_KEY env variable not found. Generating a secure random key in memory.")
+            self.SECRET_KEY = secrets.token_hex(32)
 
     class Config:
         case_sensitive = True

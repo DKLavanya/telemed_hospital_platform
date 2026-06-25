@@ -1,6 +1,8 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import os
+from jose import jwt, JWTError
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
@@ -21,9 +23,15 @@ app = FastAPI(
 )
 
 # Set CORS origins
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_env:
+    allowed_origins = allowed_origins_env.split(",")
+else:
+    allowed_origins = ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to the frontend URL
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -90,7 +98,26 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # WebRTC signaling WebSocket endpoint
 @app.websocket("/ws/signaling/{room_id}/{client_id}")
-async def websocket_signaling_endpoint(websocket: WebSocket, room_id: str, client_id: str):
+async def websocket_signaling_endpoint(
+    websocket: WebSocket, 
+    room_id: str, 
+    client_id: str,
+    token: str = Query(None)
+):
+    # Authenticate token query parameter
+    if not token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        email: str = payload.get("sub")
+        if email is None:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+    except JWTError:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
     await signaling_manager.connect(websocket, room_id, client_id)
     try:
         while True:

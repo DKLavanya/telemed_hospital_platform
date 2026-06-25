@@ -42,5 +42,6 @@ export async function apiRequest(endpoint: string, method: string = "GET", body:
 }
 
 export function getWebSocketSignalingUrl(roomId: string, clientId: string): string {
-  return `ws://localhost:8000/ws/signaling/${roomId}/${clientId}`;
+  const token = typeof window !== "undefined" ? localStorage.getItem("telemed_token") : "";
+  return `ws://localhost:8000/ws/signaling/${roomId}/${clientId}?token=${token}`;
 }
