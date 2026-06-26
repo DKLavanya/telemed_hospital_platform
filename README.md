@@ -81,3 +81,7 @@ The database seeds automatically with doctor profiles on startup. You can log in
 - **Amit Patel (General Physician)**
   - 📧 Email: `amit.patel@telemed.com`
   - 🔑 Password: `doctorpassword123`
+- **Emily Stone (Pediatrician)**
+  - 📧 Email: `emily.stone@telemed.com`
+  - 🔑 Password: `doctorpassword123`
+
