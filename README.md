@@ -18,8 +18,7 @@ A secure, modern, and comprehensive hospital management & telemedicine system. I
 
 The application is deployed and fully active in the cloud:
 
-- 🌐 **Frontend Client (Vercel)**: [https://telemed-hospital-platform.vercel.app](https://telemed-hospital-platform.vercel.app)
-- ⚡ **Backend API Docs (Render)**: [https://telemed-backend-afjq.onrender.com/docs](https://telemed-backend-afjq.onrender.com/docs)
+- 🌐 **Live Website (Vercel)**: [https://telemed-hospital-platform.vercel.app](https://telemed-hospital-platform.vercel.app)
 - 🗄️ **Database Server (Neon)**: Serverless PostgreSQL Database
 
 
