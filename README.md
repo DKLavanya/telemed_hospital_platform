@@ -22,6 +22,4 @@ The application is deployed and fully active in the cloud:
 - ⚡ **Backend API Docs (Render)**: [https://telemed-backend-afjq.onrender.com/docs](https://telemed-backend-afjq.onrender.com/docs)
 - 🗄️ **Database Server (Neon)**: Serverless PostgreSQL Database
 
-### 🔑 Authorization Keys
-- **Doctor Registration Security Key**: `HOSPITAL_DOC_2026` *(Required to create a new doctor account on the Sign Up page)*
 
