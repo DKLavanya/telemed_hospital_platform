@@ -14,7 +14,20 @@ A secure, modern, and comprehensive hospital management & telemedicine system. I
 
 ---
 
-## Getting Started
+## Live Cloud Deployment
+
+The application is deployed and fully active in the cloud:
+
+- 🌐 **Frontend Client (Vercel)**: [https://telemed-hospital-platform.vercel.app](https://telemed-hospital-platform.vercel.app)
+- ⚡ **Backend API Docs (Render)**: [https://telemed-backend-afjq.onrender.com/docs](https://telemed-backend-afjq.onrender.com/docs)
+- 🗄️ **Database Server (Neon)**: Serverless PostgreSQL Database
+
+### 🔑 Authorization Keys
+- **Doctor Registration Security Key**: `HOSPITAL_DOC_2026` *(Required to create a new doctor account on the Sign Up page)*
+
+---
+
+## Getting Started (Local Run)
 
 ### Option A: Local Run (No Docker required, uses SQLite)
 
