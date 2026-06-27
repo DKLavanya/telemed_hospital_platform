@@ -14,7 +14,8 @@ export default function AuthPage() {
     password: "",
     specialization: "",
     qualification: "",
-    availability: ""
+    availability: "",
+    securityCode: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,7 +61,8 @@ export default function AuthPage() {
           role: role,
           specialization: role === "doctor" ? formData.specialization : null,
           qualification: role === "doctor" ? formData.qualification : null,
-          availability: role === "doctor" ? formData.availability : null
+          availability: role === "doctor" ? formData.availability : null,
+          security_code: role === "doctor" ? formData.securityCode : null
         });
 
         // Automatically log in after registration
@@ -206,6 +208,22 @@ export default function AuthPage() {
                   placeholder="e.g. Mon-Fri 9AM-5PM" 
                   className="form-input" 
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Doctor Security Registration Key</label>
+                <div className="input-with-icon">
+                  <Lock className="input-icon" size={16} />
+                  <input 
+                    type="password" 
+                    name="securityCode" 
+                    required 
+                    value={formData.securityCode} 
+                    onChange={handleInputChange} 
+                    placeholder="Enter Security Registration Key" 
+                    className="form-input" 
+                  />
+                </div>
               </div>
             </div>
           )}

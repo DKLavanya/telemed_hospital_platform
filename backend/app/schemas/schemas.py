@@ -24,6 +24,7 @@ class UserCreate(BaseModel):
     specialization: Optional[str] = None
     qualification: Optional[str] = None
     availability: Optional[str] = None
+    security_code: Optional[str] = None
 
 
 # --- User Schemas ---

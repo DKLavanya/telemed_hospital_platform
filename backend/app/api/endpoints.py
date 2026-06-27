@@ -1,4 +1,5 @@
 import datetime
+import os
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
@@ -68,6 +69,15 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Verify doctor registration code if role is doctor
+    if user_in.role == "doctor":
+        doctor_secret = os.getenv("DOCTOR_REGISTRATION_CODE", "HOSPITAL_DOC_2026")
+        if not user_in.security_code or user_in.security_code != doctor_secret:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: Invalid or missing doctor registration security code."
+            )
+            
     hashed_pwd = get_password_hash(user_in.password)
     user = models.User(
         name=user_in.name,
