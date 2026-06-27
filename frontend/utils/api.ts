@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 export class ApiError extends Error {
   status?: number;
@@ -43,5 +43,17 @@ export async function apiRequest(endpoint: string, method: string = "GET", body:
 
 export function getWebSocketSignalingUrl(roomId: string, clientId: string): string {
   const token = typeof window !== "undefined" ? localStorage.getItem("telemed_token") : "";
-  return `ws://localhost:8000/ws/signaling/${roomId}/${clientId}?token=${token}`;
+  
+  let wsBase = "ws://localhost:8000";
+  if (typeof window !== "undefined") {
+    if (API_BASE_URL.startsWith("https://")) {
+      const host = API_BASE_URL.replace("https://", "").split("/")[0];
+      wsBase = `wss://${host}`;
+    } else if (API_BASE_URL.startsWith("http://")) {
+      const host = API_BASE_URL.replace("http://", "").split("/")[0];
+      wsBase = `ws://${host}`;
+    }
+  }
+  
+  return `${wsBase}/ws/signaling/${roomId}/${clientId}?token=${token}`;
 }
