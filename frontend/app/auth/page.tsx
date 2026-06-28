@@ -53,6 +53,24 @@ export default function AuthPage() {
           router.push("/patient");
         }
       } else {
+        // Enforce password complexity rules: minimum 8 chars, 1 number, 1 special char
+        const password = formData.password;
+        if (password.length < 8) {
+          setError("Password must be at least 8 characters long.");
+          setLoading(false);
+          return;
+        }
+        if (!/\d/.test(password)) {
+          setError("Password must contain at least one number.");
+          setLoading(false);
+          return;
+        }
+        if (!/[^a-zA-Z0-9]/.test(password)) {
+          setError("Password must contain at least one special character/symbol.");
+          setLoading(false);
+          return;
+        }
+
         // Register Flow
         await apiRequest("/auth/register", "POST", {
           name: formData.name,

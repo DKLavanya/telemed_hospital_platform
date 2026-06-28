@@ -68,6 +68,15 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Enforce password complexity rules: minimum 8 chars, 1 number, 1 special char
+    password = user_in.password
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
+    if not any(c.isdigit() for c in password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one number.")
+    if not any(not c.isalnum() for c in password):
+        raise HTTPException(status_code=400, detail="Password must contain at least one special character/symbol.")
     
     # Verify doctor registration code if role is doctor
     if user_in.role == "doctor":
