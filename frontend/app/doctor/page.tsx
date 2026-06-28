@@ -154,7 +154,7 @@ export default function DoctorDashboard() {
 
       setTimeout(() => setRecordSuccess(false), 5000);
     } catch (err: any) {
-      alert("Error logging medical records.");
+      alert("Error logging medical records: " + (err.message || err));
     } finally {
       setRecordLoading(false);
     }
