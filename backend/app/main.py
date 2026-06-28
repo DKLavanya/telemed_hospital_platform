@@ -6,7 +6,7 @@ from jose import jwt, JWTError
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
-from app.api.endpoints import router as api_router, get_password_hash
+from app.api.endpoints import router as api_router
 from app.models import models
 from app.services.webrtc_signaling import signaling_manager
 
@@ -36,61 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Seed mock doctors if database is empty
-@app.on_event("startup")
-def seed_database():
-    db = SessionLocal()
-    try:
-        doctor_count = db.query(models.User).filter(models.User.role == models.UserRole.DOCTOR).count()
-        if doctor_count == 0:
-            logger.info("Seeding initial doctor profiles into database...")
-            
-            mock_doctors = [
-                {
-                    "name": "Dr. Sarah Jenkins",
-                    "email": "sarah.jenkins@telemed.com",
-                    "password": "doctorpassword123",
-                    "specialization": "Cardiologist",
-                    "qualification": "MD, FACC",
-                    "availability": "Mon-Wed (9:00 AM - 1:00 PM)"
-                },
-                {
-                    "name": "Dr. Amit Patel",
-                    "email": "amit.patel@telemed.com",
-                    "password": "doctorpassword123",
-                    "specialization": "General Physician",
-                    "qualification": "MBBS, MD (Internal Medicine)",
-                    "availability": "Mon-Fri (10:00 AM - 4:00 PM)"
-                },
-                {
-                    "name": "Dr. Emily Stone",
-                    "email": "emily.stone@telemed.com",
-                    "password": "doctorpassword123",
-                    "specialization": "Pediatrician",
-                    "qualification": "MD (Pediatrics)",
-                    "availability": "Tue-Thu (2:00 PM - 6:00 PM)"
-                }
-            ]
-            
-            for doc_data in mock_doctors:
-                hashed_pwd = get_password_hash(doc_data["password"])
-                doctor = models.User(
-                    name=doc_data["name"],
-                    email=doc_data["email"],
-                    hashed_password=hashed_pwd,
-                    role=models.UserRole.DOCTOR,
-                    specialization=doc_data["specialization"],
-                    qualification=doc_data["qualification"],
-                    availability=doc_data["availability"]
-                )
-                db.add(doctor)
-            db.commit()
-            logger.info("Successfully seeded doctor profiles.")
-    except Exception as e:
-        logger.error(f"Error seeding database: {e}")
-    finally:
-        db.close()
 
 
 # Mount main API endpoints
