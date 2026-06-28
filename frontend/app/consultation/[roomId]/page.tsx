@@ -41,9 +41,10 @@ export default function ConsultationRoom() {
   }, [roomId]);
 
   const startDevicesAndCall = async () => {
+    let stream: MediaStream | null = null;
     try {
-      // 1. Get local user media
-      const stream = await navigator.mediaDevices.getUserMedia({
+      // 1. Get local user media (optional fallback if camera is blocked/busy)
+      stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
@@ -51,7 +52,11 @@ export default function ConsultationRoom() {
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
+    } catch (mediaErr) {
+      console.warn("Camera/Mic access denied or already in use by another browser. Running call without local video stream.", mediaErr);
+    }
 
+    try {
       // 2. Connect to WebSocket signaling server
       const wsUrl = getWebSocketSignalingUrl(roomId, clientId);
       const ws = new WebSocket(wsUrl);
@@ -76,10 +81,12 @@ export default function ConsultationRoom() {
       const pc = new RTCPeerConnection(rtcConfig);
       peerConnectionRef.current = pc;
 
-      // Add local tracks to peer connection
-      stream.getTracks().forEach((track) => {
-        pc.addTrack(track, stream);
-      });
+      // Add local tracks to peer connection if we have a stream
+      if (stream) {
+        stream.getTracks().forEach((track) => {
+          pc.addTrack(track, stream!);
+        });
+      }
 
       // Handle remote track
       pc.ontrack = (event) => {
@@ -105,7 +112,6 @@ export default function ConsultationRoom() {
       };
 
       // Notify peer to negotiate
-      // Create offer if doctor, wait for offer if patient (simple role convention)
       if (role === "doctor") {
         setTimeout(async () => {
           try {
@@ -123,7 +129,7 @@ export default function ConsultationRoom() {
       }
 
     } catch (err) {
-      console.warn("Camera/Mic access failed or STUN Server blocked. Falling back to Mock Simulation Mode.", err);
+      console.warn("STUN Server blocked or signaling failed. Falling back to Mock Simulation Mode.", err);
       // Fallback: We simulate a call so that the user is wowed and can test the UI cleanly!
       setCallState("simulating");
     }
