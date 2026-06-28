@@ -10,7 +10,7 @@ export default function DoctorDashboard() {
 
   const formatAppointmentTime = (dateString: string) => {
     let formattedDateString = dateString;
-    if (!dateString.endsWith("Z") && !dateString.includes("+") && !dateString.includes("-")) {
+    if (!dateString.endsWith("Z")) {
       formattedDateString = `${dateString}Z`;
     }
     const date = new Date(formattedDateString);
