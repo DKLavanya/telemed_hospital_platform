@@ -83,7 +83,11 @@ export default function PatientDashboard() {
   };
 
   const formatAppointmentTime = (dateString: string) => {
-    const date = new Date(dateString);
+    let formattedDateString = dateString;
+    if (!dateString.endsWith("Z") && !dateString.includes("+") && !dateString.includes("-")) {
+      formattedDateString = `${dateString}Z`;
+    }
+    const date = new Date(formattedDateString);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
