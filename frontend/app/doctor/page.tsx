@@ -208,7 +208,7 @@ export default function DoctorDashboard() {
       
       setTimeout(() => setPrescriptionSuccess(false), 5000);
     } catch (err: any) {
-      alert("Error saving prescription.");
+      alert("Error saving prescription: " + (err.message || err));
     } finally {
       setPrescriptionLoading(false);
     }
@@ -233,7 +233,7 @@ export default function DoctorDashboard() {
       
       setTimeout(() => setBillingSuccess(false), 5000);
     } catch (err: any) {
-      alert("Error issuing invoice.");
+      alert("Error issuing invoice: " + (err.message || err));
     } finally {
       setBillingLoading(false);
     }
