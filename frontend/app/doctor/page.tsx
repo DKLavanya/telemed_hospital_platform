@@ -29,6 +29,7 @@ export default function DoctorDashboard() {
   
   // Clinical Logging State (EMR Record)
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
+  const [patientHistory, setPatientHistory] = useState<any[]>([]);
   const [symptoms, setSymptoms] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [vitalsBP, setVitalsBP] = useState("");
@@ -84,6 +85,22 @@ export default function DoctorDashboard() {
   useEffect(() => {
     loadDoctorData();
   }, []);
+
+  useEffect(() => {
+    if (selectedAppt) {
+      const loadPatientHistory = async () => {
+        try {
+          const history = await apiRequest(`/records?patient_id=${selectedAppt.patient_id}`);
+          setPatientHistory(history);
+        } catch (err) {
+          console.error("Failed to load patient history:", err);
+        }
+      };
+      loadPatientHistory();
+    } else {
+      setPatientHistory([]);
+    }
+  }, [selectedAppt]);
 
   const handleStartConsultation = async (appt: any) => {
     try {
@@ -145,6 +162,11 @@ export default function DoctorDashboard() {
       });
 
       setRecordSuccess(true);
+      
+      // Refresh patient history list immediately after saving
+      const history = await apiRequest(`/records?patient_id=${selectedAppt.patient_id}`);
+      setPatientHistory(history);
+
       setSymptoms("");
       setDiagnosis("");
       setVitalsBP("");
@@ -481,90 +503,125 @@ export default function DoctorDashboard() {
               </div>
 
               {selectedAppt ? (
-                <form onSubmit={handleSaveRecord} className="clinical-form animate-slide-up">
-                  {recordSuccess && (
-                    <div className="success-banner">
-                      <CheckCircle2 size={16} /> Clinical EMR logged and saved to database successfully!
-                    </div>
-                  )}
+                <div className="emr-workspace-grid animate-slide-up">
+                  {/* Left: EMR Record Form */}
+                  <form onSubmit={handleSaveRecord} className="clinical-form">
+                    {recordSuccess && (
+                      <div className="success-banner">
+                        <CheckCircle2 size={16} /> Clinical EMR logged and saved to database successfully!
+                      </div>
+                    )}
 
-                  <div className="form-row-grid">
+                    <div className="form-row-grid">
+                      <div className="form-group">
+                        <label className="form-label">Vitals: Blood Pressure</label>
+                        <input 
+                          type="text" 
+                          value={vitalsBP} 
+                          onChange={(e) => setVitalsBP(e.target.value)} 
+                          placeholder="e.g. 120/80" 
+                          className="form-input" 
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Vitals: Heart Rate (bpm)</label>
+                        <input 
+                          type="number" 
+                          value={vitalsHR} 
+                          onChange={(e) => setVitalsHR(e.target.value === "" ? "" : Number(e.target.value))} 
+                          placeholder="e.g. 72" 
+                          className="form-input" 
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Vitals: Temperature (°F)</label>
+                        <input 
+                          type="number" 
+                          step="0.1" 
+                          value={vitalsTemp} 
+                          onChange={(e) => setVitalsTemp(e.target.value === "" ? "" : Number(e.target.value))} 
+                          placeholder="e.g. 98.6" 
+                          className="form-input" 
+                        />
+                      </div>
+                    </div>
+
                     <div className="form-group">
-                      <label className="form-label">Vitals: Blood Pressure</label>
+                      <label className="form-label">Chief Symptoms Complaint</label>
+                      <textarea 
+                        rows={3} 
+                        required 
+                        value={symptoms} 
+                        onChange={(e) => setSymptoms(e.target.value)} 
+                        placeholder="Describe what symptoms the patient complained about." 
+                        className="form-input" 
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Clinical Diagnosis</label>
                       <input 
                         type="text" 
-                        value={vitalsBP} 
-                        onChange={(e) => setVitalsBP(e.target.value)} 
-                        placeholder="e.g. 120/80" 
+                        required 
+                        value={diagnosis} 
+                        onChange={(e) => setDiagnosis(e.target.value)} 
+                        placeholder="e.g. Acute Viral Bronchitis" 
                         className="form-input" 
                       />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Vitals: Heart Rate (bpm)</label>
-                      <input 
-                        type="number" 
-                        value={vitalsHR} 
-                        onChange={(e) => setVitalsHR(e.target.value === "" ? "" : Number(e.target.value))} 
-                        placeholder="e.g. 72" 
+                      <label className="form-label">Physician Treatment Plan & Notes</label>
+                      <textarea 
+                        rows={4} 
+                        value={clinicalNotes} 
+                        onChange={(e) => setClinicalNotes(e.target.value)} 
+                        placeholder="Input long form instructions, follow up recommendations, lifestyle changes, etc." 
                         className="form-input" 
                       />
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Vitals: Temperature (°F)</label>
-                      <input 
-                        type="number" 
-                        step="0.1" 
-                        value={vitalsTemp} 
-                        onChange={(e) => setVitalsTemp(e.target.value === "" ? "" : Number(e.target.value))} 
-                        placeholder="e.g. 98.6" 
-                        className="form-input" 
-                      />
-                    </div>
-                  </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Chief Symptoms Complaint</label>
-                    <textarea 
-                      rows={3} 
-                      required 
-                      value={symptoms} 
-                      onChange={(e) => setSymptoms(e.target.value)} 
-                      placeholder="Describe what symptoms the patient complained about." 
-                      className="form-input" 
-                    />
-                  </div>
+                    <button 
+                      type="submit" 
+                      disabled={recordLoading} 
+                      className="btn btn-primary btn-save"
+                    >
+                      {recordLoading ? "Saving EMR..." : "Save Record"}
+                    </button>
+                  </form>
 
-                  <div className="form-group">
-                    <label className="form-label">Clinical Diagnosis</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={diagnosis} 
-                      onChange={(e) => setDiagnosis(e.target.value)} 
-                      placeholder="e.g. Acute Viral Bronchitis" 
-                      className="form-input" 
-                    />
+                  {/* Right: Patient History Panel */}
+                  <div className="patient-history-panel glass-card">
+                    <h4>Clinical History & past checkups</h4>
+                    {patientHistory.length === 0 ? (
+                      <div className="no-history-box">
+                        <User size={24} />
+                        <p>No previous medical records found for this patient.</p>
+                      </div>
+                    ) : (
+                      <div className="history-timeline">
+                        {patientHistory.map((rec) => (
+                          <div key={rec.id} className="history-card">
+                            <div className="history-header">
+                              <span className="history-date">📅 {new Date(rec.visit_date).toLocaleDateString()}</span>
+                              <span className="history-doctor">Dr. {rec.doctor?.name || "Physician"}</span>
+                            </div>
+                            <div className="history-body">
+                              <p><strong>Diagnosis:</strong> <span style={{ color: 'white', fontWeight: 500 }}>{rec.diagnosis}</span></p>
+                              <p><strong>Symptoms:</strong> {rec.symptoms}</p>
+                              {(rec.vitals_blood_pressure || rec.vitals_heart_rate || rec.vitals_temperature) && (
+                                <p className="history-vitals-txt">
+                                  <strong>Vitals:</strong> {rec.vitals_blood_pressure ? `BP ${rec.vitals_blood_pressure}` : ""} {rec.vitals_heart_rate ? `| HR ${rec.vitals_heart_rate} bpm` : ""} {rec.vitals_temperature ? `| Temp ${rec.vitals_temperature}°F` : ""}
+                                </p>
+                              )}
+                              {rec.notes && <p className="history-notes-block"><strong>Notes:</strong> {rec.notes}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Physician Treatment Plan & Notes</label>
-                    <textarea 
-                      rows={4} 
-                      value={clinicalNotes} 
-                      onChange={(e) => setClinicalNotes(e.target.value)} 
-                      placeholder="Input long form instructions, follow up recommendations, lifestyle changes, etc." 
-                      className="form-input" 
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={recordLoading} 
-                    className="btn btn-primary btn-save"
-                  >
-                    {recordLoading ? "Saving EMR..." : "Save Record"}
-                  </button>
-                </form>
+                </div>
               ) : (
                 <div className="select-patient-prompt">
                   <User size={32} />
@@ -1004,6 +1061,82 @@ export default function DoctorDashboard() {
           text-align: center;
           padding: 40px;
           color: var(--text-muted);
+        }
+
+        /* EMR Workspace Grid & Patient History CSS */
+        .emr-workspace-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr;
+          gap: 24px;
+          align-items: start;
+          width: 100%;
+        }
+        .patient-history-panel {
+          padding: 24px;
+          max-height: 520px;
+          overflow-y: auto;
+          background: rgba(255, 255, 255, 0.01);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+        }
+        .patient-history-panel h4 {
+          margin-bottom: 16px;
+          font-size: 1.05rem;
+          color: var(--text-main);
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 10px;
+        }
+        .no-history-box {
+          color: var(--text-muted);
+          font-size: 0.85rem;
+          text-align: center;
+          padding: 40px 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        .history-timeline {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .history-card {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-sm);
+          padding: 16px;
+          font-size: 0.85rem;
+        }
+        .history-header {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          font-weight: 600;
+          border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+          padding-bottom: 6px;
+        }
+        .history-date {
+          color: var(--secondary);
+        }
+        .history-doctor {
+          color: var(--text-muted);
+        }
+        .history-body p {
+          margin-bottom: 6px;
+          line-height: 1.4;
+        }
+        .history-vitals-txt {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+        }
+        .history-notes-block {
+          background: rgba(0, 0, 0, 0.2);
+          padding: 8px 12px;
+          border-radius: var(--radius-sm);
+          color: var(--text-muted);
+          margin-top: 8px;
+          line-height: 1.4;
         }
 
         @media (max-width: 960px) {
