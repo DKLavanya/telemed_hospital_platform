@@ -222,6 +222,25 @@ def delete_appointment(
     db.commit()
     return None
 
+@router.post("/appointments/{appointment_id}/delete")
+def delete_appointment_post_fallback(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    db_appt = db.query(models.Appointment).filter(models.Appointment.id == appointment_id).first()
+    if not db_appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+        
+    if current_user.role == models.UserRole.PATIENT and db_appt.patient_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    elif current_user.role == models.UserRole.DOCTOR and db_appt.doctor_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+        
+    db.delete(db_appt)
+    db.commit()
+    return {"status": "success"}
+
 
 # --- PATIENT RECORDS ENDPOINTS ---
 

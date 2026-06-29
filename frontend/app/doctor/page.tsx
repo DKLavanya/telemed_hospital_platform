@@ -133,7 +133,7 @@ export default function DoctorDashboard() {
   const handleDeleteAppointment = async (apptId: number) => {
     if (!confirm("Are you sure you want to delete this appointment from the queue?")) return;
     try {
-      await apiRequest(`/appointments/${apptId}`, "DELETE");
+      await apiRequest(`/appointments/${apptId}/delete`, "POST");
       setAppointments(appointments.filter(a => a.id !== apptId));
       if (selectedAppt?.id === apptId) {
         setSelectedAppt(null);
