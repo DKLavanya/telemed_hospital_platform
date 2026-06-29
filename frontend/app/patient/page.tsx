@@ -29,6 +29,11 @@ export default function PatientDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const loadDashboardData = async () => {
     const token = localStorage.getItem("telemed_token");
@@ -266,7 +271,7 @@ export default function PatientDashboard() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div className="loading-container">
         <RefreshCw className="spinner-icon" size={32} />
@@ -469,23 +474,30 @@ export default function PatientDashboard() {
                     />
                   </div>
 
-                  <button 
-                    type="submit" 
-                    style={{
-                      width: "100%",
-                      height: "50px",
-                      backgroundColor: "red",
-                      color: "white",
-                      fontSize: "20px",
-                      display: "block",
-                      border: "3px solid black",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      textAlign: "center"
-                    }}
-                  >
-                    CLICK TO BOOK NOW
-                  </button>
+                  <div style={{ width: "100%", marginTop: "12px", boxSizing: "border-box" }}>
+                    <button 
+                      type="submit" 
+                      disabled={bookingLoading}
+                      style={{
+                        width: "100%",
+                        padding: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ffffff",
+                        background: "linear-gradient(135deg, var(--primary), var(--secondary))",
+                        fontWeight: "bold",
+                        fontSize: "0.95rem",
+                        boxSizing: "border-box",
+                        borderRadius: "12px",
+                        border: "none",
+                        cursor: "pointer",
+                        boxShadow: "0 4px 14px var(--primary-glow)"
+                      }}
+                    >
+                      {bookingLoading ? "Scheduling..." : "Schedule Appointment"}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
