@@ -481,21 +481,28 @@ export default function PatientDashboard() {
                       style={{
                         width: "100%",
                         padding: "14px",
+                        margin: "0",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         color: "#ffffff",
                         background: "linear-gradient(135deg, var(--primary), var(--secondary))",
-                        fontWeight: "bold",
-                        fontSize: "0.95rem",
                         boxSizing: "border-box",
                         borderRadius: "12px",
                         border: "none",
                         cursor: "pointer",
-                        boxShadow: "0 4px 14px var(--primary-glow)"
+                        boxShadow: "0 4px 14px var(--primary-glow)",
+                        overflow: "hidden"
                       }}
                     >
-                      {bookingLoading ? "Scheduling..." : "Schedule Appointment"}
+                      <span style={{ 
+                        color: "#ffffff", 
+                        fontWeight: "bold", 
+                        fontSize: "0.95rem",
+                        display: "inline-block"
+                      }}>
+                        {bookingLoading ? "Scheduling..." : "Schedule Appointment"}
+                      </span>
                     </button>
                   </div>
                 </form>
