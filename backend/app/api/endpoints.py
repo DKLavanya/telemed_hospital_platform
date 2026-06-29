@@ -218,6 +218,10 @@ def delete_appointment(
     elif current_user.role == models.UserRole.DOCTOR and db_appt.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
         
+    # Set referencing foreign keys to NULL first to prevent foreign key constraint violations
+    db.query(models.Prescription).filter(models.Prescription.appointment_id == appointment_id).update({"appointment_id": None})
+    db.query(models.Billing).filter(models.Billing.appointment_id == appointment_id).update({"appointment_id": None})
+    
     db.delete(db_appt)
     db.commit()
     return None
@@ -237,6 +241,10 @@ def delete_appointment_post_fallback(
     elif current_user.role == models.UserRole.DOCTOR and db_appt.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
         
+    # Set referencing foreign keys to NULL first to prevent foreign key constraint violations
+    db.query(models.Prescription).filter(models.Prescription.appointment_id == appointment_id).update({"appointment_id": None})
+    db.query(models.Billing).filter(models.Billing.appointment_id == appointment_id).update({"appointment_id": None})
+    
     db.delete(db_appt)
     db.commit()
     return {"status": "success"}
