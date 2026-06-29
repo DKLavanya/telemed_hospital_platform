@@ -482,9 +482,8 @@ export default function PatientDashboard() {
                         width: "100%",
                         padding: "14px",
                         margin: "0",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        display: "block",
+                        textAlign: "center",
                         color: "#ffffff",
                         background: "linear-gradient(135deg, var(--primary), var(--secondary))",
                         boxSizing: "border-box",
@@ -499,7 +498,8 @@ export default function PatientDashboard() {
                         color: "#ffffff", 
                         fontWeight: "bold", 
                         fontSize: "0.95rem",
-                        display: "inline-block"
+                        display: "inline-block",
+                        textAlign: "center"
                       }}>
                         {bookingLoading ? "Scheduling..." : "Schedule Appointment"}
                       </span>
