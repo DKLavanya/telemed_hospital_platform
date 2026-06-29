@@ -811,7 +811,15 @@ export default function PatientDashboard() {
         }
         .btn-book {
           width: 100%;
-          padding: 12px;
+          max-width: 100%;
+          padding: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff !important;
+          font-weight: 600;
+          font-size: 0.95rem;
+          background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
         }
         
         /* Medical Records */
