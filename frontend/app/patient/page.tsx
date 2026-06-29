@@ -177,6 +177,38 @@ export default function PatientDashboard() {
 
       const orderDetails = await apiRequest(`/billing/${bill.id}/razorpay-order`, "POST");
       
+      // If server does not have Razorpay key configured, run sandbox checkout simulation
+      if (orderDetails.key_id === "rzp_test_mock_keys_not_set") {
+        console.log("Simulating sandbox payment transaction...");
+        setTimeout(async () => {
+          try {
+            setPayingLoading(true);
+            await apiRequest("/billing/verify-razorpay", "POST", {
+              razorpay_payment_id: "mock_payment_id_123456",
+              razorpay_order_id: orderDetails.order_id,
+              razorpay_signature: "mock_signature_123456",
+              bill_id: bill.id
+            });
+
+            setPaymentSuccess(true);
+            triggerConfetti();
+
+            const updatedBills = await apiRequest("/billing");
+            setBills(updatedBills);
+
+            setTimeout(() => {
+              setPayingBill(null);
+              setPaymentSuccess(false);
+            }, 3000);
+          } catch (err: any) {
+            setError(err.message || "Payment verification failed.");
+          } finally {
+            setPayingLoading(false);
+          }
+        }, 2000);
+        return;
+      }
+      
       const options = {
         key: orderDetails.key_id,
         amount: orderDetails.amount * 100, // paise
@@ -616,8 +648,8 @@ export default function PatientDashboard() {
             ) : (
               <div className="payment-success-msg">
                 <RefreshCw className="spinner-icon" size={32} />
-                <h4>Opening Razorpay Checkout...</h4>
-                <p>Please complete your payment in the secure popup window.</p>
+                <h4>Processing Sandbox Payment...</h4>
+                <p>Real payment gateway credentials are not configured on the server; running checkout simulation.</p>
               </div>
             )}
           </div>
