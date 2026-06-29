@@ -847,6 +847,19 @@ export default function PatientDashboard() {
           display: flex;
           flex-direction: column;
           gap: 18px;
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .booking-form .form-group {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .booking-form .form-input {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
         }
         .success-banner {
           background: var(--success-glow);
