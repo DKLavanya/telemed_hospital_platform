@@ -383,7 +383,14 @@ export default function DoctorDashboard() {
                             📅 {formatAppointmentTime(appt.appointment_time)}
                           </span>
                         </td>
-                        <td><span className="appt-notes-txt">{appt.notes || "General checkup"}</span></td>
+                        <td>
+                          <span 
+                            className="appt-notes-txt" 
+                            title={appt.notes || "General checkup"}
+                          >
+                            {appt.notes || "General checkup"}
+                          </span>
+                        </td>
                         <td>
                           <span className={`badge badge-${appt.status}`}>
                             {appt.status}
@@ -881,11 +888,10 @@ export default function DoctorDashboard() {
         }
         .appt-notes-txt {
           color: var(--text-muted);
-          max-width: 200px;
+          max-width: 300px;
           display: inline-block;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
+          word-break: break-word;
+          white-space: normal;
         }
         .actions-cell {
           display: flex;
