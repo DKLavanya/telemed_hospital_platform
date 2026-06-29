@@ -473,6 +473,18 @@ export default function PatientDashboard() {
                     type="submit" 
                     disabled={bookingLoading} 
                     className="btn btn-primary btn-book"
+                    style={{
+                      width: "100%",
+                      maxWidth: "100%",
+                      padding: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#ffffff",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      boxSizing: "border-box"
+                    }}
                   >
                     {bookingLoading ? "Scheduling..." : "Schedule Appointment"}
                   </button>
