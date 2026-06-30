@@ -21,6 +21,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: str = "patient" # patient, doctor
+    phone: Optional[str] = None
     specialization: Optional[str] = None
     qualification: Optional[str] = None
     availability: Optional[str] = None
@@ -33,6 +34,7 @@ class UserResponse(BaseModel):
     name: str
     email: EmailStr
     role: str
+    phone: Optional[str] = None
     specialization: Optional[str] = None
     qualification: Optional[str] = None
     availability: Optional[str] = None

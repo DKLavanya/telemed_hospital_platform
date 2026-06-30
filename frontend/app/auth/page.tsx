@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, UserPlus, FileSignature, Stethoscope } from "lucide-react";
+import { User, Mail, Lock, UserPlus, FileSignature, Stethoscope, Phone } from "lucide-react";
 import { apiRequest } from "../../utils/api";
 
 export default function AuthPage() {
@@ -12,6 +12,7 @@ export default function AuthPage() {
     name: "",
     email: "",
     password: "",
+    phone: "",
     specialization: "",
     qualification: "",
     availability: "",
@@ -78,6 +79,7 @@ export default function AuthPage() {
           email: formData.email,
           password: formData.password,
           role: role,
+          phone: formData.phone || null,
           specialization: role === "doctor" ? formData.specialization : null,
           qualification: role === "doctor" ? formData.qualification : null,
           availability: role === "doctor" ? formData.availability : null,
@@ -146,6 +148,22 @@ export default function AuthPage() {
                     <option value="patient">Patient</option>
                     <option value="doctor">Medical Specialist / Doctor</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Mobile Number</label>
+                <div className="input-with-icon">
+                  <Phone className="input-icon" size={16} />
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    required={role === "patient"}
+                    value={formData.phone} 
+                    onChange={handleInputChange} 
+                    placeholder="Enter mobile number" 
+                    className="form-input" 
+                  />
                 </div>
               </div>
             </>

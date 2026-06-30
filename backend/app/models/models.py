@@ -22,6 +22,9 @@ class User(Base):
     qualification = Column(String, nullable=True) # e.g. MD, MBBS
     availability = Column(String, nullable=True) # e.g. Mon-Fri 9AM-5PM
     
+    # Contact field
+    phone = Column(String, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # Relationships

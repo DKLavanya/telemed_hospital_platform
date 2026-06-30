@@ -402,7 +402,14 @@ export default function DoctorDashboard() {
                         <td>
                           <div className="patient-user-cell">
                             <div className="cell-avatar">{(appt.patient?.name?.[0] || "P").toUpperCase()}</div>
-                            <span>{appt.patient?.name || "Unknown Patient"}</span>
+                            <div style={{ display: "flex", flexDirection: "column" }}>
+                              <span style={{ fontWeight: 600 }}>{appt.patient?.name || "Unknown Patient"}</span>
+                              {appt.patient?.phone && (
+                                <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                                  📞 {appt.patient.phone}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td>

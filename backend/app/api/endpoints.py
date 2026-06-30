@@ -93,6 +93,7 @@ def register(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
         email=user_in.email,
         hashed_password=hashed_pwd,
         role=user_in.role,
+        phone=user_in.phone,
         specialization=user_in.specialization,
         qualification=user_in.qualification,
         availability=user_in.availability
