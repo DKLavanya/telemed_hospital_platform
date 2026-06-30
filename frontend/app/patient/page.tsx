@@ -969,7 +969,7 @@ export default function PatientDashboard() {
         }
         .pres-date {
           font-size: 0.9rem;
-          color: var(--text-muted);
+          color: var(--secondary);
         }
         .pres-medicines-table table {
           width: 100%;
