@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Activity, User, LogOut, Menu, X } from "lucide-react";
+import { Activity, User, LogOut, Menu, X, Sun, Moon } from "lucide-react";
 import { apiRequest } from "../utils/api";
 
 export default function Navbar() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState("dark");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -48,12 +49,32 @@ export default function Navbar() {
 
   useEffect(() => {
     fetchCurrentUser();
+    // Load and initialize theme preference
+    const savedTheme = localStorage.getItem("telemed_theme") || "dark";
+    setTheme(savedTheme);
+    if (savedTheme === "light") {
+      document.documentElement.classList.add("light-theme");
+    } else {
+      document.documentElement.classList.remove("light-theme");
+    }
+
     // Listen to changes in localStorage or custom trigger
     window.addEventListener("auth_changed", fetchCurrentUser);
     return () => {
       window.removeEventListener("auth_changed", fetchCurrentUser);
     };
   }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    localStorage.setItem("telemed_theme", nextTheme);
+    if (nextTheme === "light") {
+      document.documentElement.classList.add("light-theme");
+    } else {
+      document.documentElement.classList.remove("light-theme");
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("telemed_token");
@@ -92,6 +113,9 @@ export default function Navbar() {
 
         {/* Desktop Auth Section */}
         <div className="auth-section desktop-only">
+          <button onClick={toggleTheme} className="theme-toggle-btn" title={theme === "dark" ? "Switch to Day Theme" : "Switch to Night Theme"}>
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           {currentUser ? (
             <div className="user-profile-menu">
               <div className="user-avatar-info">
@@ -161,6 +185,11 @@ export default function Navbar() {
             </Link>
             
             <div className="mobile-auth-divider" />
+            
+            <button onClick={toggleTheme} className="btn btn-secondary mobile-theme-toggle-btn" style={{ marginBottom: "16px", width: "100%", justifyContent: "center", display: "flex", gap: "8px", alignItems: "center" }}>
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === "dark" ? "Day Theme" : "Night Theme"}
+            </button>
             
             <div className="mobile-auth-wrapper">
               {currentUser ? (
@@ -329,6 +358,24 @@ export default function Navbar() {
           font-size: 0.75rem;
           color: var(--text-muted);
         }
+        .navbar-container .theme-toggle-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: var(--transition-fast);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+          border-radius: var(--radius-full);
+          margin-right: 12px;
+        }
+        .navbar-container .theme-toggle-btn:hover {
+          color: var(--primary);
+          background: var(--primary-glow);
+        }
+
         .navbar-container .btn-logout {
           background: transparent;
           border: none;
