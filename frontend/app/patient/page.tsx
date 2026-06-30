@@ -532,7 +532,16 @@ export default function PatientDashboard() {
                         <h4>Diagnosis: {rec.diagnosis || "Undetermined"}</h4>
                         <span className="record-doctor">Logged by {rec.doctor?.name || "Unknown Physician"}</span>
                       </div>
-                      <span className="record-date">📅 {new Date(rec.visit_date).toLocaleDateString()}</span>
+                      <span className="record-date">
+                        📅 {new Date(rec.visit_date).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true
+                        })}
+                      </span>
                     </div>
                     <div className="record-body">
                       <div className="vitals-row">
@@ -567,7 +576,16 @@ export default function PatientDashboard() {
                         <h4>Digital Prescription</h4>
                         <span className="pres-doc">Dr. {pres.doctor?.name || "Unknown Physician"}</span>
                       </div>
-                      <span className="pres-date">{new Date(pres.created_at).toLocaleDateString()}</span>
+                      <span className="pres-date">
+                        📅 {new Date(pres.created_at).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true
+                        })}
+                      </span>
                     </div>
                     
                     <div className="pres-medicines-table">
