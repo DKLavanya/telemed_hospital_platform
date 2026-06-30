@@ -68,6 +68,10 @@ export default function PatientDashboard() {
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to load dashboard data.");
+      if (err.status === 403 || err.status === 401 || (err.message && err.message.includes("Unauthorized"))) {
+        localStorage.removeItem("telemed_token");
+        window.location.href = "/login";
+      }
     } finally {
       setLoading(false);
     }
