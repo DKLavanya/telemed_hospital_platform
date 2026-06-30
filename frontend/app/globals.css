@@ -400,22 +400,70 @@ h1, h2, h3, h4, h5, h6 {
 
 .light-theme .nav-link,
 .light-theme .mobile-nav-link {
-  color: #475569;
+  color: #475569 !important;
 }
 
 .light-theme .nav-link.active,
 .light-theme .mobile-nav-link.active {
-  color: var(--primary);
+  color: var(--primary) !important;
+}
+
+.light-theme .nav-link:hover,
+.light-theme .mobile-nav-link:hover {
+  color: var(--primary) !important;
 }
 
 .light-theme .card-inner,
 .light-theme .prescription-card-file,
 .light-theme .patient-history-panel {
   background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
 .light-theme .no-history-box {
   background: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Navbar and Footer Overrides for Light Theme */
+.light-theme .navbar-container {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.light-theme .logo-text {
+  color: #0f172a !important;
+}
+
+.light-theme .user-profile-menu {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.light-theme .avatar-name {
+  color: #0f172a !important;
+}
+
+.light-theme .avatar-role {
+  color: #64748b !important;
+}
+
+.light-theme .btn-logout, 
+.light-theme .theme-toggle-btn {
+  color: #64748b !important;
+}
+
+.light-theme .theme-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--primary) !important;
+}
+
+.light-theme .footer-container {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #64748b !important;
+}
+
+.light-theme .footer-disclaimer {
+  color: #ef4444 !important;
 }
 
