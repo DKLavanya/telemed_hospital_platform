@@ -864,6 +864,20 @@ export default function DoctorDashboard() {
       )}
 
       <style jsx>{`
+        .modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
         .doctor-dashboard-layout {
           display: grid;
           grid-template-columns: 280px 1fr;
