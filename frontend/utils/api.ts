@@ -34,9 +34,9 @@ export async function apiRequest(endpoint: string, method: string = "GET", body:
       if (res.status === 401 || res.status === 403) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("telemed_token");
-          window.location.href = "/login";
-          return new Promise(() => {}); // Halt execution to prevent UI catch blocks and alert popups
+          window.location.href = "/auth";
         }
+        throw new ApiError("Session expired. Redirecting to login...", res.status);
       }
       throw new ApiError(errData.detail || `Request failed with status ${res.status}`, res.status);
     }

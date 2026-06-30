@@ -70,7 +70,7 @@ export default function PatientDashboard() {
       setError(err.message || "Failed to load dashboard data.");
       if (err.status === 403 || err.status === 401 || (err.message && err.message.includes("Unauthorized"))) {
         localStorage.removeItem("telemed_token");
-        window.location.href = "/login";
+        window.location.href = "/auth";
       }
     } finally {
       setLoading(false);
