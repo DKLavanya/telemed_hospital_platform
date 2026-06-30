@@ -60,7 +60,8 @@ def format_appointment_email(
     doctor_specialization: str,
     appointment_time: datetime.datetime,
     action_type: str,
-    video_room_id: Optional[str] = None
+    video_room_id: Optional[str] = None,
+    doctor_email: Optional[str] = None
 ) -> tuple[str, str, str]:
     """
     Constructs and returns (to_email, subject, html_content) for an appointment notification event.
@@ -69,6 +70,7 @@ def format_appointment_email(
     # Portal Base URLs
     portal_base = "https://telemed-hospital-platform.vercel.app"
     patient_dashboard_url = f"{portal_base}/patient"
+    doctor_dashboard_url = f"{portal_base}/doctor"
     
     # Format date-time for email
     date_str = appointment_time.strftime("%A, %d %B %Y at %I:%M %p") + " (IST)"
@@ -81,7 +83,23 @@ def format_appointment_email(
     cta_link = ""
     alert_footer = ""
 
-    if action_type == "created":
+    # Choose recipient email based on action type
+    recipient_email = doctor_email if action_type == "doctor_notification" else patient_email
+
+    if action_type == "doctor_notification":
+        subject = f"New Appointment Requested: {patient_name} - TeleMed"
+        title_text = "New Appointment Request"
+        status_msg = f"Dear Dr. {doctor_name}, a new patient ({patient_name}) has requested a telemedicine consultation slot with you. Please review the details below."
+        detail_rows = f"""
+            <tr><td><strong>Patient Name:</strong></td><td>{patient_name}</td></tr>
+            <tr><td><strong>Patient Email:</strong></td><td>{patient_email}</td></tr>
+            <tr><td><strong>Requested Slot:</strong></td><td>{date_str}</td></tr>
+            <tr><td><strong>Status:</strong></td><td><span style="color: #f59e0b; font-weight: bold;">PENDING APPROVAL</span></td></tr>
+        """
+        cta_text = "Review in Doctor Dashboard"
+        cta_link = doctor_dashboard_url
+
+    elif action_type == "created":
         subject = "Consultation Booking Requested - TeleMed"
         title_text = "Consultation Requested"
         status_msg = f"Dear {patient_name}, your request to schedule a telemedicine consultation has been received and is waiting for physician confirmation."

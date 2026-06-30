@@ -165,7 +165,7 @@ def create_appointment(
     db.commit()
     db.refresh(db_appt)
     
-    # Trigger Booking requested email
+    # Trigger Booking requested email (to Patient)
     to_email, subject, html = format_appointment_email(
         patient_name=current_user.name,
         patient_email=current_user.email,
@@ -175,6 +175,19 @@ def create_appointment(
         action_type="created"
     )
     background_tasks.add_task(send_email, to_email, subject, html)
+    
+    # Trigger Booking requested email (to Doctor)
+    if doctor.email:
+        to_email_doc, subject_doc, html_doc = format_appointment_email(
+            patient_name=current_user.name,
+            patient_email=current_user.email,
+            doctor_name=doctor.name,
+            doctor_specialization=doctor.specialization or "Physician",
+            appointment_time=db_appt.appointment_time,
+            action_type="doctor_notification",
+            doctor_email=doctor.email
+        )
+        background_tasks.add_task(send_email, to_email_doc, subject_doc, html_doc)
     
     return db_appt
 
