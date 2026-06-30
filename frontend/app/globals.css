@@ -201,8 +201,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .form-select option {
-  background-color: #1f2937;
-  color: #f3f4f6;
+  background-color: var(--bg-card);
+  color: var(--text-main);
 }
 
 /* Badges */
