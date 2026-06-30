@@ -13,7 +13,20 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const fetchCurrentUser = async () => {
-    const token = localStorage.getItem("telemed_token");
+    let token = null;
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (path.startsWith("/doctor")) {
+        token = localStorage.getItem("telemed_token_doctor");
+      } else if (path.startsWith("/patient")) {
+        token = localStorage.getItem("telemed_token_patient");
+      } else {
+        token = localStorage.getItem("telemed_token_patient") || 
+                localStorage.getItem("telemed_token_doctor") || 
+                localStorage.getItem("telemed_token");
+      }
+    }
+
     if (!token) {
       setCurrentUser(null);
       return;
@@ -26,6 +39,8 @@ export default function Navbar() {
       // Only remove the token if it is explicitly an authentication failure (401 Unauthorized or 403 Forbidden)
       if (err.status === 401 || err.status === 403) {
         localStorage.removeItem("telemed_token");
+        localStorage.removeItem("telemed_token_doctor");
+        localStorage.removeItem("telemed_token_patient");
         setCurrentUser(null);
       }
     }
@@ -42,6 +57,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("telemed_token");
+    localStorage.removeItem("telemed_token_doctor");
+    localStorage.removeItem("telemed_token_patient");
     setCurrentUser(null);
     window.dispatchEvent(new Event("auth_changed"));
     router.push("/");

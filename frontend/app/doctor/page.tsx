@@ -57,7 +57,7 @@ export default function DoctorDashboard() {
   const [error, setError] = useState("");
 
   const loadDoctorData = async () => {
-    const token = localStorage.getItem("telemed_token");
+    const token = localStorage.getItem("telemed_token_doctor");
     if (!token) {
       setCurrentUser(null);
       setLoading(false);
@@ -79,7 +79,7 @@ export default function DoctorDashboard() {
       console.error(err);
       setError(err.message || "Failed to load dashboard data.");
       if (err.status === 403 || err.status === 401 || (err.message && err.message.includes("Unauthorized"))) {
-        localStorage.removeItem("telemed_token");
+        localStorage.removeItem("telemed_token_doctor");
         window.location.href = "/auth";
       }
     } finally {

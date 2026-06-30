@@ -42,14 +42,15 @@ export default function AuthPage() {
         });
         localStorage.setItem("telemed_token", response.access_token);
         
-        // Broadcast auth change event to sync Navbar state
-        window.dispatchEvent(new Event("auth_changed"));
-
         // Redirect based on user profile
-        const userProfile = await apiRequest("/auth/me");
+        const userProfile = await apiRequest("/auth/me", "GET", null, response.access_token);
         if (userProfile.role === "doctor") {
+          localStorage.setItem("telemed_token_doctor", response.access_token);
+          window.dispatchEvent(new Event("auth_changed"));
           router.push("/doctor");
         } else {
+          localStorage.setItem("telemed_token_patient", response.access_token);
+          window.dispatchEvent(new Event("auth_changed"));
           router.push("/patient");
         }
       } else {
@@ -89,11 +90,13 @@ export default function AuthPage() {
           password: formData.password
         });
         localStorage.setItem("telemed_token", response.access_token);
-        window.dispatchEvent(new Event("auth_changed"));
-
         if (role === "doctor") {
+          localStorage.setItem("telemed_token_doctor", response.access_token);
+          window.dispatchEvent(new Event("auth_changed"));
           router.push("/doctor");
         } else {
+          localStorage.setItem("telemed_token_patient", response.access_token);
+          window.dispatchEvent(new Event("auth_changed"));
           router.push("/patient");
         }
       }

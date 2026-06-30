@@ -13,7 +13,20 @@ export async function apiRequest(endpoint: string, method: string = "GET", body:
     "Content-Type": "application/json",
   };
 
-  const activeToken = token || (typeof window !== "undefined" ? localStorage.getItem("telemed_token") : null);
+  let activeToken = token;
+  if (!activeToken && typeof window !== "undefined") {
+    const path = window.location.pathname;
+    if (path.startsWith("/doctor")) {
+      activeToken = localStorage.getItem("telemed_token_doctor");
+    } else if (path.startsWith("/patient")) {
+      activeToken = localStorage.getItem("telemed_token_patient");
+    } else {
+      activeToken = localStorage.getItem("telemed_token_patient") || 
+                    localStorage.getItem("telemed_token_doctor") || 
+                    localStorage.getItem("telemed_token");
+    }
+  }
+
   if (activeToken) {
     headers["Authorization"] = `Bearer ${activeToken}`;
   }
@@ -34,6 +47,8 @@ export async function apiRequest(endpoint: string, method: string = "GET", body:
       if (res.status === 401 || res.status === 403) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("telemed_token");
+          localStorage.removeItem("telemed_token_doctor");
+          localStorage.removeItem("telemed_token_patient");
           window.location.href = "/auth";
         }
         throw new ApiError("Session expired. Redirecting to login...", res.status);
