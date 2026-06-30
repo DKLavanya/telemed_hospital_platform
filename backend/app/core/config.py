@@ -24,11 +24,10 @@ class Settings(BaseSettings):
     def __init__(self, **values):
         super().__init__(**values)
         if not self.SECRET_KEY:
-            import secrets
             import logging
-            # Generate a secure random key on the fly if not provided
-            logging.warning("SECRET_KEY env variable not found. Generating a secure random key in memory.")
-            self.SECRET_KEY = secrets.token_hex(32)
+            # Use a stable fallback key to prevent session loss in multi-worker/multi-container environments
+            logging.warning("SECRET_KEY env variable not found. Using a default stable key fallback. PLEASE CONFIGURE SECRET_KEY ON RENDER FOR PRODUCTION SECURITY.")
+            self.SECRET_KEY = "telemed_default_stable_secret_key_2026_super_secure_987654321"
 
     class Config:
         case_sensitive = True
