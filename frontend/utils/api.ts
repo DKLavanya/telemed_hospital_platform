@@ -31,6 +31,13 @@ export async function apiRequest(endpoint: string, method: string = "GET", body:
     const res = await fetch(`${API_BASE_URL}${endpoint}`, config);
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("telemed_token");
+          window.location.href = "/login";
+          return new Promise(() => {}); // Halt execution to prevent UI catch blocks and alert popups
+        }
+      }
       throw new ApiError(errData.detail || `Request failed with status ${res.status}`, res.status);
     }
     if (res.status === 204) return null;
