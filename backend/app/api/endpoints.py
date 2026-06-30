@@ -2,7 +2,7 @@ import datetime
 import os
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 import bcrypt
@@ -13,8 +13,7 @@ from app.core.database import get_db
 from app.models import models
 from app.schemas import schemas
 from app.services.ai_analysis import analyze_symptoms
-from app.services.billing_service import generate_invoice_number, process_mock_payment
-from app.services.webrtc_signaling import signaling_manager
+from app.services.billing_service import generate_invoice_number
 
 router = APIRouter()
 
