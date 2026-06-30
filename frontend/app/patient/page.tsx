@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Calendar, FileText, Activity, CreditCard, Stethoscope, Video, PlusCircle, AlertCircle, RefreshCw, Sparkles, CheckCircle2 } from "lucide-react";
-import { apiRequest } from "../../utils/api";
+import { apiRequest, formatDateTime } from "../../utils/api";
 import confetti from "canvas-confetti";
 
 export default function PatientDashboard() {
@@ -533,14 +533,7 @@ export default function PatientDashboard() {
                         <span className="record-doctor">Logged by {rec.doctor?.name || "Unknown Physician"}</span>
                       </div>
                       <span className="record-date">
-                        📅 {new Date(rec.visit_date).toLocaleString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true
-                        })}
+                        📅 {formatDateTime(rec.visit_date)}
                       </span>
                     </div>
                     <div className="record-body">
@@ -577,14 +570,7 @@ export default function PatientDashboard() {
                         <span className="pres-doc">Dr. {pres.doctor?.name || "Unknown Physician"}</span>
                       </div>
                       <span className="pres-date">
-                        📅 {new Date(pres.created_at).toLocaleString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true
-                        })}
+                        📅 {formatDateTime(pres.created_at)}
                       </span>
                     </div>
                     
@@ -642,16 +628,7 @@ export default function PatientDashboard() {
                     {bills.map((bill) => (
                       <tr key={bill.id}>
                         <td><code>{bill.invoice_number}</code></td>
-                        <td>
-                          {new Date(bill.created_at).toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true
-                          })}
-                        </td>
+                        <td>{formatDateTime(bill.created_at)}</td>
                         <td><strong>₹{bill.amount.toFixed(2)}</strong></td>
                         <td>
                           <span className={`badge badge-${bill.status}`}>

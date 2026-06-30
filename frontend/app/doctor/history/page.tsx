@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { apiRequest } from "../../../utils/api";
+import { apiRequest, formatDateTime } from "../../../utils/api";
 import { Activity, RefreshCw } from "lucide-react";
 
 function HistoryContent() {
@@ -72,14 +72,7 @@ function HistoryContent() {
               <div className="record-card">
                 <div className="record-header">
                   <div className="header-left">
-                    <span className="visit-date">📅 {new Date(rec.visit_date).toLocaleString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true
-                    })}</span>
+                    <span className="visit-date">📅 {formatDateTime(rec.visit_date)}</span>
                     <span className="doctor-badge">Logged by Dr. {rec.doctor?.name || "Physician"}</span>
                   </div>
                   {rec.vitals_blood_pressure || rec.vitals_heart_rate || rec.vitals_temperature ? (

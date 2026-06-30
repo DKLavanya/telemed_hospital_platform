@@ -79,3 +79,29 @@ export function getWebSocketSignalingUrl(roomId: string, clientId: string): stri
   
   return `${wsBase}/ws/signaling/${roomId}/${clientId}?token=${token}`;
 }
+
+export function formatDateTime(dateStr: string): string {
+  if (!dateStr) return "";
+  
+  // Ensure the string is treated as UTC
+  let cleanStr = dateStr;
+  if (!cleanStr.endsWith("Z") && !cleanStr.includes("+") && !/-\d{2}:\d{2}$/.test(cleanStr)) {
+    // Convert space to T if present (e.g., "2026-06-30 16:42:00" -> "2026-06-30T16:42:00")
+    cleanStr = cleanStr.replace(" ", "T");
+    if (!cleanStr.includes("T")) {
+      // If it's just a date without time, parse natively
+      return new Date(cleanStr).toLocaleDateString("en-GB");
+    }
+    // Append Z to parse as UTC
+    cleanStr += "Z";
+  }
+  
+  return new Date(cleanStr).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  });
+}
