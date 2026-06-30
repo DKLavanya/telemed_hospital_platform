@@ -624,7 +624,16 @@ export default function PatientDashboard() {
                     {bills.map((bill) => (
                       <tr key={bill.id}>
                         <td><code>{bill.invoice_number}</code></td>
-                        <td>{new Date(bill.created_at).toLocaleDateString("en-GB")}</td>
+                        <td>
+                          {new Date(bill.created_at).toLocaleString("en-GB", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true
+                          })}
+                        </td>
                         <td><strong>₹{bill.amount.toFixed(2)}</strong></td>
                         <td>
                           <span className={`badge badge-${bill.status}`}>
