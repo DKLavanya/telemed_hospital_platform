@@ -40,8 +40,9 @@ def send_email(to_email: str, subject: str, html_content: str) -> bool:
             server.starttls()
             server.ehlo()
             
-        # Login and send
-        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+        # Login and send (automatically strip spaces from copy-pasted Google App Passwords)
+        sanitized_password = settings.SMTP_PASSWORD.replace(" ", "")
+        server.login(settings.SMTP_USER, sanitized_password)
         server.send_message(msg)
         server.quit()
         
