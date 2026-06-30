@@ -2,7 +2,7 @@ import datetime
 import os
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, BackgroundTasks
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 import bcrypt
@@ -15,6 +15,7 @@ from app.schemas import schemas
 from app.services.ai_analysis import analyze_symptoms
 from app.services.billing_service import generate_invoice_number, process_mock_payment
 from app.services.webrtc_signaling import signaling_manager
+from app.services.email_service import send_email, format_appointment_email
 
 router = APIRouter()
 
@@ -130,6 +131,7 @@ def get_doctors(db: Session = Depends(get_db)):
 @router.post("/appointments", response_model=schemas.AppointmentResponse)
 def create_appointment(
     appt: schemas.AppointmentCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -150,7 +152,7 @@ def create_appointment(
     doctor = db.query(models.User).filter(models.User.id == appt.doctor_id, models.User.role == models.UserRole.DOCTOR).first()
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
-        
+         
     db_appt = models.Appointment(
         patient_id=current_user.id,
         doctor_id=appt.doctor_id,
@@ -162,6 +164,18 @@ def create_appointment(
     db.add(db_appt)
     db.commit()
     db.refresh(db_appt)
+    
+    # Trigger Booking requested email
+    to_email, subject, html = format_appointment_email(
+        patient_name=current_user.name,
+        patient_email=current_user.email,
+        doctor_name=doctor.name,
+        doctor_specialization=doctor.specialization or "Physician",
+        appointment_time=db_appt.appointment_time,
+        action_type="created"
+    )
+    background_tasks.add_task(send_email, to_email, subject, html)
+    
     return db_appt
 
 @router.get("/appointments", response_model=List[schemas.AppointmentResponse])
@@ -180,6 +194,7 @@ def get_appointments(
 def update_appointment(
     appointment_id: int,
     appt_update: schemas.AppointmentUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -192,20 +207,42 @@ def update_appointment(
     elif current_user.role == models.UserRole.DOCTOR and db_appt.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
         
+    old_status = db_appt.status
     if appt_update.status is not None:
         db_appt.status = appt_update.status
     if appt_update.notes is not None:
         db_appt.notes = appt_update.notes
     if appt_update.video_room_id is not None:
         db_appt.video_room_id = appt_update.video_room_id
-        
+         
     db.commit()
     db.refresh(db_appt)
+    
+    # Trigger email alert on status changes
+    if appt_update.status is not None and appt_update.status != old_status:
+        patient_name = db_appt.patient.name if db_appt.patient else "Patient"
+        patient_email = db_appt.patient.email if db_appt.patient else None
+        doctor_name = db_appt.doctor.name if db_appt.doctor else "Doctor"
+        doctor_spec = db_appt.doctor.specialization if db_appt.doctor else "Physician"
+        
+        if patient_email:
+            to_email, subject, html = format_appointment_email(
+                patient_name=patient_name,
+                patient_email=patient_email,
+                doctor_name=doctor_name,
+                doctor_specialization=doctor_spec or "Physician",
+                appointment_time=db_appt.appointment_time,
+                action_type=appt_update.status,
+                video_room_id=db_appt.video_room_id
+            )
+            background_tasks.add_task(send_email, to_email, subject, html)
+            
     return db_appt
 
 @router.delete("/appointments/{appointment_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_appointment(
     appointment_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -218,6 +255,24 @@ def delete_appointment(
     elif current_user.role == models.UserRole.DOCTOR and db_appt.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
         
+    # Trigger cancellation email if appointment was in active/pending/scheduled status
+    if db_appt.status in ["pending", "scheduled", "active"]:
+        patient_name = db_appt.patient.name if db_appt.patient else "Patient"
+        patient_email = db_appt.patient.email if db_appt.patient else None
+        doctor_name = db_appt.doctor.name if db_appt.doctor else "Doctor"
+        doctor_spec = db_appt.doctor.specialization if db_appt.doctor else "Physician"
+        
+        if patient_email:
+            to_email, subject, html = format_appointment_email(
+                patient_name=patient_name,
+                patient_email=patient_email,
+                doctor_name=doctor_name,
+                doctor_specialization=doctor_spec or "Physician",
+                appointment_time=db_appt.appointment_time,
+                action_type="cancelled"
+            )
+            background_tasks.add_task(send_email, to_email, subject, html)
+            
     # Set referencing foreign keys to NULL first to prevent foreign key constraint violations
     db.query(models.Prescription).filter(models.Prescription.appointment_id == appointment_id).update({"appointment_id": None})
     db.query(models.Billing).filter(models.Billing.appointment_id == appointment_id).update({"appointment_id": None})
@@ -229,6 +284,7 @@ def delete_appointment(
 @router.post("/appointments/{appointment_id}/delete")
 def delete_appointment_post_fallback(
     appointment_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -241,6 +297,24 @@ def delete_appointment_post_fallback(
     elif current_user.role == models.UserRole.DOCTOR and db_appt.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Forbidden")
         
+    # Trigger cancellation email if appointment was in active/pending/scheduled status
+    if db_appt.status in ["pending", "scheduled", "active"]:
+        patient_name = db_appt.patient.name if db_appt.patient else "Patient"
+        patient_email = db_appt.patient.email if db_appt.patient else None
+        doctor_name = db_appt.doctor.name if db_appt.doctor else "Doctor"
+        doctor_spec = db_appt.doctor.specialization if db_appt.doctor else "Physician"
+        
+        if patient_email:
+            to_email, subject, html = format_appointment_email(
+                patient_name=patient_name,
+                patient_email=patient_email,
+                doctor_name=doctor_name,
+                doctor_specialization=doctor_spec or "Physician",
+                appointment_time=db_appt.appointment_time,
+                action_type="cancelled"
+            )
+            background_tasks.add_task(send_email, to_email, subject, html)
+            
     # Set referencing foreign keys to NULL first to prevent foreign key constraint violations
     db.query(models.Prescription).filter(models.Prescription.appointment_id == appointment_id).update({"appointment_id": None})
     db.query(models.Billing).filter(models.Billing.appointment_id == appointment_id).update({"appointment_id": None})

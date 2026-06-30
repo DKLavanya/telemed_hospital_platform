@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_ID: Optional[str] = os.getenv("RAZORPAY_KEY_ID")
     RAZORPAY_KEY_SECRET: Optional[str] = os.getenv("RAZORPAY_KEY_SECRET")
 
+    # SMTP Mail Config
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
+    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
+    EMAILS_FROM_EMAIL: str = os.getenv("EMAILS_FROM_EMAIL", "no-reply@telemed-platform.com")
+
     def __init__(self, **values):
         super().__init__(**values)
         if not self.SECRET_KEY:
