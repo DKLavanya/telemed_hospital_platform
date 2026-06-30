@@ -491,13 +491,14 @@ export default function DoctorDashboard() {
             <h3 className="section-title-tab">Create Electronic Health Record</h3>
             
             <div className="clinical-grid">
-              <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap", width: "100%", marginBottom: "12px" }}>
-                <div className="form-group" style={{ flex: "1", minWidth: "280px", margin: 0 }}>
+              <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", width: "100%", marginBottom: "20px" }}>
+                <div className="form-group" style={{ flex: "1", margin: 0 }}>
                   <label className="form-label">Select Patient from Appointments</label>
                   <select 
                     value={selectedAppt ? selectedAppt.id : ""} 
                     onChange={(e) => setSelectedAppt(appointments.find(a => a.id === Number(e.target.value)) || null)} 
                     className="form-input form-select"
+                    style={{ width: "100%" }}
                   >
                     <option value="">-- Choose active / completed patient session --</option>
                     {appointments.map((a) => (
@@ -508,22 +509,25 @@ export default function DoctorDashboard() {
                   </select>
                 </div>
                 {selectedAppt && (
-                  <button
-                    type="button"
-                    onClick={() => window.open(`/doctor/history?patient_id=${selectedAppt.patient_id}&name=${encodeURIComponent(selectedAppt.patient?.name || "")}`, "_blank")}
-                    className="btn btn-secondary"
-                    style={{
-                      height: "46px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      padding: "0 20px",
-                      boxSizing: "border-box",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    <Activity size={16} /> View Clinical History ({patientHistory.length} records)
-                  </button>
+                  <div className="form-group" style={{ flex: "0 0 auto", margin: 0 }}>
+                    <label className="form-label" style={{ visibility: "hidden", display: "block" }}>&nbsp;</label>
+                    <button
+                      type="button"
+                      onClick={() => window.open(`/doctor/history?patient_id=${selectedAppt.patient_id}&name=${encodeURIComponent(selectedAppt.patient?.name || "")}`, "_blank")}
+                      className="btn btn-secondary"
+                      style={{
+                        height: "46px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "0 20px",
+                        boxSizing: "border-box",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      <Activity size={16} /> View Clinical History ({patientHistory.length} records)
+                    </button>
+                  </div>
                 )}
               </div>
 
