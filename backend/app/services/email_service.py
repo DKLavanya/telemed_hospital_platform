@@ -11,9 +11,39 @@ logger = logging.getLogger("email_service")
 
 def send_email(to_email: str, subject: str, html_content: str) -> bool:
     """
-    Sends an email using the SMTP settings from config.
-    Falls back to a simulation log if SMTP credentials are not configured.
+    Sends an email using either Resend HTTP API (to bypass Render port blocking)
+    or standard SMTP if configured, falling back to simulation logs.
     """
+    # 1. Fallback to Resend HTTP API if configured (bypasses Render SMTP port blocking)
+    resend_key = os.getenv("RESEND_API_KEY")
+    if resend_key:
+        try:
+            import httpx
+            # Resend free tier requires the sender to be onboarding@resend.dev
+            sender = "onboarding@resend.dev"
+            response = httpx.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "from": sender,
+                    "to": to_email,
+                    "subject": subject,
+                    "html": html_content
+                },
+                timeout=10.0
+            )
+            if response.status_code in [200, 201]:
+                logger.info(f"Successfully sent email notification to {to_email} via Resend HTTP API")
+                return True
+            else:
+                logger.error(f"Resend HTTP API returned error {response.status_code}: {response.text}")
+        except Exception as e:
+            logger.error(f"Failed to send email via Resend HTTP API: {str(e)}")
+
+    # 2. Fallback to standard SMTP
     if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
         logger.warning("=" * 60)
         logger.warning(f"[EMAIL SIMULATION] Sending email to: {to_email}")
