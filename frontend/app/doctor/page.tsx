@@ -38,6 +38,7 @@ export default function DoctorDashboard() {
   const [clinicalNotes, setClinicalNotes] = useState("");
   const [recordSuccess, setRecordSuccess] = useState(false);
   const [recordLoading, setRecordLoading] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Prescription State
   const [medicines, setMedicines] = useState<any[]>([
@@ -490,26 +491,46 @@ export default function DoctorDashboard() {
             <h3 className="section-title-tab">Create Electronic Health Record</h3>
             
             <div className="clinical-grid">
-              <div className="form-group">
-                <label className="form-label">Select Patient from Appointments</label>
-                <select 
-                  value={selectedAppt ? selectedAppt.id : ""} 
-                  onChange={(e) => setSelectedAppt(appointments.find(a => a.id === Number(e.target.value)) || null)} 
-                  className="form-input form-select"
-                >
-                  <option value="">-- Choose active / completed patient session --</option>
-                  {appointments.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.patient?.name || "Unknown Patient"} - {new Date(a.appointment_time).toLocaleDateString()} ({a.status})
-                    </option>
-                  ))}
-                </select>
+              <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap", width: "100%", marginBottom: "12px" }}>
+                <div className="form-group" style={{ flex: "1", minWidth: "280px", margin: 0 }}>
+                  <label className="form-label">Select Patient from Appointments</label>
+                  <select 
+                    value={selectedAppt ? selectedAppt.id : ""} 
+                    onChange={(e) => setSelectedAppt(appointments.find(a => a.id === Number(e.target.value)) || null)} 
+                    className="form-input form-select"
+                  >
+                    <option value="">-- Choose active / completed patient session --</option>
+                    {appointments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.patient?.name || "Unknown Patient"} - {new Date(a.appointment_time).toLocaleDateString()} ({a.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {selectedAppt && (
+                  <button
+                    type="button"
+                    onClick={() => setShowHistoryModal(true)}
+                    className="btn btn-secondary"
+                    style={{
+                      height: "46px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "0 20px",
+                      boxSizing: "border-box",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    <Activity size={16} /> View Clinical History ({patientHistory.length} records)
+                  </button>
+                )}
               </div>
 
               {selectedAppt ? (
-                <div className="emr-workspace-grid animate-slide-up">
-                  {/* Left: EMR Record Form */}
-                  <form onSubmit={handleSaveRecord} className="clinical-form">
+                <div className="emr-workspace-grid animate-slide-up" style={{ display: "block" }}>
+                  {/* Full Width Centered EMR Record Form */}
+                  <form onSubmit={handleSaveRecord} className="clinical-form" style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}>
                     {recordSuccess && (
                       <div className="success-banner">
                         <CheckCircle2 size={16} /> Clinical EMR logged and saved to database successfully!
@@ -589,42 +610,11 @@ export default function DoctorDashboard() {
                       type="submit" 
                       disabled={recordLoading} 
                       className="btn btn-primary btn-save"
+                      style={{ width: "100%", padding: "14px", marginTop: "12px" }}
                     >
                       {recordLoading ? "Saving EMR..." : "Save Record"}
                     </button>
                   </form>
-
-                  {/* Right: Patient History Panel */}
-                  <div className="patient-history-panel glass-card">
-                    <h4>Clinical History & past checkups</h4>
-                    {patientHistory.length === 0 ? (
-                      <div className="no-history-box">
-                        <User size={24} />
-                        <p>No previous medical records found for this patient.</p>
-                      </div>
-                    ) : (
-                      <div className="history-timeline">
-                        {patientHistory.map((rec) => (
-                          <div key={rec.id} className="history-card">
-                            <div className="history-header">
-                              <span className="history-date">📅 {new Date(rec.visit_date).toLocaleDateString()}</span>
-                              <span className="history-doctor">Dr. {rec.doctor?.name || "Physician"}</span>
-                            </div>
-                            <div className="history-body">
-                              <p><strong>Diagnosis:</strong> <span style={{ color: 'white', fontWeight: 500 }}>{rec.diagnosis}</span></p>
-                              <p><strong>Symptoms:</strong> {rec.symptoms}</p>
-                              {(rec.vitals_blood_pressure || rec.vitals_heart_rate || rec.vitals_temperature) && (
-                                <p className="history-vitals-txt">
-                                  <strong>Vitals:</strong> {rec.vitals_blood_pressure ? `BP ${rec.vitals_blood_pressure}` : ""} {rec.vitals_heart_rate ? `| HR ${rec.vitals_heart_rate} bpm` : ""} {rec.vitals_temperature ? `| Temp ${rec.vitals_temperature}°F` : ""}
-                                </p>
-                              )}
-                              {rec.notes && <p className="history-notes-block"><strong>Notes:</strong> {rec.notes}</p>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               ) : (
                 <div className="select-patient-prompt">
@@ -826,6 +816,52 @@ export default function DoctorDashboard() {
         )}
 
       </div>
+
+      {/* Clinical History Modal */}
+      {showHistoryModal && selectedAppt && (
+        <div className="modal-backdrop">
+          <div className="glass-panel modal-card animate-slide-up" style={{ maxWidth: "600px", width: "100%", maxHeight: "80vh", overflowY: "auto", textAlign: "left", padding: "32px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0 }}>Clinical History: {selectedAppt.patient?.name}</h3>
+              <button 
+                onClick={() => setShowHistoryModal(false)} 
+                className="btn btn-secondary"
+                style={{ padding: "6px 12px", minWidth: "auto" }}
+              >
+                Close
+              </button>
+            </div>
+            
+            {patientHistory.length === 0 ? (
+              <div className="no-history-box" style={{ padding: "40px 20px", textAlign: "center", background: "rgba(255,255,255,0.02)", borderRadius: "12px" }}>
+                <Activity size={32} style={{ color: "var(--text-muted)", marginBottom: "12px", opacity: 0.5 }} />
+                <p style={{ color: "var(--text-muted)", margin: 0 }}>No previous medical records found for this patient.</p>
+              </div>
+            ) : (
+              <div className="history-timeline" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {patientHistory.map((rec) => (
+                  <div key={rec.id} className="history-card glass-card" style={{ padding: "18px", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div className="history-header" style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px" }}>
+                      <span>📅 {new Date(rec.visit_date).toLocaleDateString("en-GB")}</span>
+                      <span>Dr. {rec.doctor?.name || "Physician"}</span>
+                    </div>
+                    <div className="history-body" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "0.95rem" }}>
+                      <p style={{ margin: 0 }}><strong>Diagnosis:</strong> <span style={{ color: 'white', fontWeight: 500 }}>{rec.diagnosis}</span></p>
+                      <p style={{ margin: 0 }}><strong>Symptoms:</strong> {rec.symptoms}</p>
+                      {(rec.vitals_blood_pressure || rec.vitals_heart_rate || rec.vitals_temperature) && (
+                        <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                          <strong>Vitals:</strong> {rec.vitals_blood_pressure ? `BP ${rec.vitals_blood_pressure}` : ""} {rec.vitals_heart_rate ? `| HR ${rec.vitals_heart_rate} bpm` : ""} {rec.vitals_temperature ? `| Temp ${rec.vitals_temperature}°F` : ""}
+                        </p>
+                      )}
+                      {rec.notes && <p style={{ margin: 0, fontSize: "0.9rem", borderTop: "1px dashed rgba(255,255,255,0.05)", paddingTop: "6px", marginTop: "4px" }}><strong>Notes:</strong> {rec.notes}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .doctor-dashboard-layout {
