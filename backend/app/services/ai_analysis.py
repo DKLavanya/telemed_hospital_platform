@@ -80,71 +80,108 @@ def analyze_symptoms(symptoms_text: str, age: int = None, gender: str = None) ->
     recommendations = []
     urgency = "Low"
 
-    # Quick matching logic
-    if any(k in text for k in ["chest pain", "breathing", "shortness of breath", "tightness in chest"]):
+    # Smarter token and phrase matching helpers
+    has_chest = "chest" in text
+    has_pain = any(k in text for k in ["pain", "hurt", "tightness", "pressure", "ache", "sharp", "discomfort"])
+    has_blood = any(k in text for k in ["blood", "bleed", "bleeding", "hemorrhage", "red"])
+    has_ear_head = any(k in text for k in ["ear", "ears", "head", "skull", "brain", "hearing"])
+
+    # 1. Cardiorespiratory Distress / Chest Pain Check (Emergency)
+    if (has_chest and has_pain) or any(k in text for k in ["breathing", "shortness of breath", "breath", "suffocat", "chok"]):
         conditions.append({
             "condition": "Acute Cardiorespiratory Distress / Angina",
-            "probability": 0.70,
-            "details": "Symptoms indicating potential heart or lung stress. Requires immediate evaluation."
+            "probability": 0.85,
+            "details": "Potential myocardial infarction (heart attack), respiratory obstruction, or lung embolism. Requires immediate emergency medical care."
         })
-        recommendations.append("Call emergency services or go to the nearest emergency room immediately.")
-        recommendations.append("Do not engage in physical activity and rest until help arrives.")
+        recommendations.append("Call emergency services (like 108 or 911) immediately.")
+        recommendations.append("Rest in a seated position. Do not engage in physical activity.")
         urgency = "Emergency"
-    elif any(k in text for k in ["fever", "cough", "throat", "shivering", "chills"]):
-        if any(k in text for k in ["severe", "persist"]):
-            conditions.append({
-                "condition": "Severe Respiratory Infection (e.g. Bronchitis or Pneumonia)",
-                "probability": 0.65,
-                "details": "Persistent or high fever along with cough may indicate deep respiratory track infection."
-            })
-            recommendations.append("Schedule a telemedicine or in-person consult with a doctor within 24 hours.")
-            recommendations.append("Stay hydrated and monitor body temperature regularly.")
-            urgency = "Medium"
-        else:
-            conditions.append({
-                "condition": "Viral Upper Respiratory Infection (Common Cold / Flu)",
-                "probability": 0.85,
-                "details": "Typical presentation of viral flu or common cold. Self-limiting in most cases."
-            })
-            recommendations.append("Get plenty of rest and drink warm fluids.")
-            recommendations.append("Over-the-counter fever reducers or sore throat lozenges may help relieve symptoms.")
-            urgency = "Low"
-    elif any(k in text for k in ["stomach", "vomit", "diarrhea", "nausea", "belly"]):
+
+    # 2. Bleeding from Ears / Head Injury (Emergency)
+    if has_blood and has_ear_head:
         conditions.append({
-            "condition": "Gastroenteritis / Food Poisoning",
-            "probability": 0.75,
-            "details": "Inflammation of the stomach and intestines, likely due to a viral or bacterial infection."
-        })
-        recommendations.append("Prioritize electrolyte replacement solutions to prevent dehydration.")
-        recommendations.append("Eat a bland diet (toast, rice, bananas) as tolerated.")
-        urgency = "Low"
-        if any(k in text for k in ["blood", "severe pain", "sharp pain"]):
-            conditions.append({
-                "condition": "Acute Abdomen (Appendicitis / Cholecystitis)",
-                "probability": 0.40,
-                "details": "Severe localized abdominal pain with nausea or fever warrants diagnostic imaging."
-            })
-            recommendations.append("Seek emergency medical examination to rule out appendicitis or gallbladder issues.")
-            urgency = "High"
-    elif any(k in text for k in ["headache", "migraine", "temple"]):
-        conditions.append({
-            "condition": "Tension Headache or Migraine",
+            "condition": "Traumatic Head Injury / Otorrhagia (Eardrum Bleeding)",
             "probability": 0.80,
-            "details": "A primary headache disorder characterized by recurrent moderate to severe pain."
+            "details": "Bleeding from the ear canal or head trauma indicating potential eardrum rupture, middle ear injury, or base of skull fracture."
         })
-        recommendations.append("Rest in a quiet, dark room.")
-        recommendations.append("Apply a cool compress to your forehead or temples.")
-        urgency = "Low"
-    elif any(k in text for k in ["rash", "itch", "skin", "hives"]):
+        recommendations.append("Seek immediate emergency medical examination at the nearest hospital.")
+        recommendations.append("Do not plug the ears or block the bleeding. Keep your head slightly elevated.")
+        urgency = "Emergency"
+
+    # 3. Fever & Respiratory Infection
+    if any(k in text for k in ["fever", "cough", "throat", "shivering", "chills", "cold", "flu"]):
+        if any(k in text for k in ["severe", "persist", "blood", "pneumonia"]):
+            conditions.append({
+                "condition": "Severe Respiratory Infection (Bronchitis / Pneumonia)",
+                "probability": 0.70,
+                "details": "Persistent high fever and severe cough indicating deep lower respiratory track infection."
+            })
+            recommendations.append("Schedule a consult with a doctor within 24 hours.")
+            recommendations.append("Stay hydrated and monitor body temperature regularly.")
+            if urgency != "Emergency":
+                urgency = "High"
+        else:
+            if not conditions: # only add if not already in emergency
+                conditions.append({
+                    "condition": "Viral Upper Respiratory Infection (Common Cold / Flu)",
+                    "probability": 0.85,
+                    "details": "Typical presentation of viral flu or common cold. Self-limiting in most cases."
+                })
+                recommendations.append("Get plenty of rest and drink warm fluids.")
+                recommendations.append("Over-the-counter fever reducers or throat lozenges can help relieve symptoms.")
+                if urgency not in ["Emergency", "High"]:
+                    urgency = "Low"
+
+    # 4. Gastrointestinal Check
+    if any(k in text for k in ["stomach", "vomit", "diarrhea", "nausea", "belly", "abdomen", "gastric"]):
+        if any(k in text for k in ["blood", "severe pain", "sharp pain", "intense"]):
+            conditions.append({
+                "condition": "Acute Abdomen / Gastrointestinal Bleeding",
+                "probability": 0.65,
+                "details": "Severe localized abdominal pain or blood in vomit/stool warrants immediate diagnostic imaging."
+            })
+            recommendations.append("Seek emergency medical examination to rule out appendicitis or internal bleeding.")
+            if urgency != "Emergency":
+                urgency = "High"
+        else:
+            if not conditions:
+                conditions.append({
+                    "condition": "Gastroenteritis / Food Poisoning",
+                    "probability": 0.75,
+                    "details": "Inflammation of the stomach and intestines, likely due to a viral or bacterial infection."
+                })
+                recommendations.append("Prioritize electrolyte replacement solutions to prevent dehydration.")
+                recommendations.append("Eat a bland diet as tolerated.")
+                if urgency not in ["Emergency", "High"]:
+                    urgency = "Low"
+
+    # 5. Headaches (if not matching head injury)
+    if any(k in text for k in ["headache", "migraine", "temple", "migran"]):
+        if not has_blood:
+            conditions.append({
+                "condition": "Tension Headache or Migraine",
+                "probability": 0.80,
+                "details": "A primary headache disorder characterized by recurrent moderate to severe pain."
+            })
+            recommendations.append("Rest in a quiet, dark room.")
+            recommendations.append("Apply a cool compress to your forehead or temples.")
+            if urgency not in ["Emergency", "High"]:
+                urgency = "Low"
+
+    # 6. Skin rashes
+    if any(k in text for k in ["rash", "itch", "skin", "hives", "dermatitis"]):
         conditions.append({
             "condition": "Allergic Dermatitis / Contact Rash",
             "probability": 0.70,
             "details": "Inflammatory skin condition triggered by exposure to an allergen or irritant."
         })
-        recommendations.append("Avoid scratching the affected area to prevent secondary bacterial infection.")
-        recommendations.append("Apply a mild moisturizer or topical hydrocortisone if advised by a pharmacist.")
-        urgency = "Low"
-    else:
+        recommendations.append("Avoid scratching the affected area to prevent secondary infection.")
+        recommendations.append("Apply a mild moisturizer or topical hydrocortisone.")
+        if urgency not in ["Emergency", "High"]:
+            urgency = "Low"
+
+    # 7. Default if no matches found
+    if not conditions:
         conditions.append({
             "condition": "Undetermined Mild Malaise",
             "probability": 0.50,

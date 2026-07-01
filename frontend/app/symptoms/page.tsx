@@ -49,30 +49,62 @@ export default function SymptomsPage() {
     let recommendations = [];
     let urgency = "Low";
 
-    if (normText.includes("chest") || normText.includes("breathing") || normText.includes("breath")) {
-      conditions = [{
-        condition: "Cardiac Chest Pain (Emergency Warning)",
-        probability: 0.80,
-        details: "Possible myocardial ischemia or severe respiratory issue. Urgent care required."
-      }];
-      recommendations = ["Seek immediate emergency care.", "Sit upright and rest. Do not perform physical work."];
-      urgency = "Emergency";
-    } else if (normText.includes("fever") || normText.includes("cough")) {
-      conditions = [{
-        condition: "Influenza / Acute Viral Syndrome",
+    const hasChest = normText.includes("chest");
+    const hasPain = ["pain", "hurt", "tightness", "pressure", "ache", "sharp", "discomfort"].some(k => normText.includes(k));
+    const hasBlood = ["blood", "bleed", "bleeding", "hemorrhage", "red"].some(k => normText.includes(k));
+    const hasEarHead = ["ear", "ears", "head", "skull", "brain", "hearing"].some(k => normText.includes(k));
+
+    if ((hasChest && hasPain) || ["breathing", "shortness of breath", "breath", "suffocat", "chok"].some(k => normText.includes(k))) {
+      conditions.push({
+        condition: "Cardiac Chest Pain / Respiratory Distress",
         probability: 0.85,
-        details: "Classic presentation of respiratory viral infection. Self-limiting, but monitor temperature."
-      }];
-      recommendations = ["Drink fluids, rest, and monitor fever.", "Consult a primary physician if fever persists beyond 3 days."];
-      urgency = "Medium";
-    } else {
-      conditions = [{
-        condition: "General Symptom Discomfort",
-        probability: 0.60,
-        details: "Symptoms are generalized. Telemedicine consultation is recommended for diagnostic evaluation."
-      }];
-      recommendations = ["Schedule a consultation in the Doctor Portal.", "Keep a log of symptoms."];
-      urgency = "Low";
+        details: "Potential cardiac warning signs or acute breathing difficulty. Immediate medical review required."
+      });
+      recommendations.push("Seek immediate emergency medical care (Call 911 / 108).");
+      recommendations.push("Sit upright, rest, and do not perform physical work.");
+      urgency = "Emergency";
+    }
+
+    if (hasBlood && hasEarHead) {
+      conditions.push({
+        condition: "Head Injury / Bleeding from Ear",
+        probability: 0.80,
+        details: "Bleeding from the ear canal or head trauma indicating potential skull base injury or eardrum rupture."
+      });
+      recommendations.push("Go to the nearest emergency room immediately.");
+      recommendations.push("Keep the head slightly elevated and do not plug the ear canal.");
+      urgency = "Emergency";
+    }
+
+    if (conditions.length === 0) {
+      if (["fever", "cough", "throat", "shivering", "chills"].some(k => normText.includes(k))) {
+        conditions.push({
+          condition: "Influenza / Acute Viral Syndrome",
+          probability: 0.85,
+          details: "Classic presentation of respiratory viral infection. Self-limiting, but monitor temperature."
+        });
+        recommendations.push("Drink fluids, rest, and monitor fever.");
+        recommendations.push("Consult a primary physician if fever persists.");
+        urgency = "Medium";
+      } else if (["stomach", "vomit", "diarrhea", "nausea", "belly"].some(k => normText.includes(k))) {
+        conditions.push({
+          condition: "Gastroenteritis / Food Poisoning",
+          probability: 0.75,
+          details: "Typical stomach or gut irritation, likely from viral or food issues."
+        });
+        recommendations.push("Stay hydrated with electrolytes.");
+        recommendations.push("Consult a provider if pain is severe or blood is present.");
+        urgency = "Low";
+      } else {
+        conditions.push({
+          condition: "General Symptom Discomfort",
+          probability: 0.60,
+          details: "Symptoms are generalized. Telemedicine consultation is recommended for diagnostic evaluation."
+        });
+        recommendations.push("Schedule a consultation in the Doctor Portal.");
+        recommendations.push("Keep a log of symptoms.");
+        urgency = "Low";
+      }
     }
 
     return {
