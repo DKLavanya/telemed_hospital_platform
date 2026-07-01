@@ -52,7 +52,30 @@ export default function SymptomsPage() {
     const hasChest = normText.includes("chest");
     const hasPain = ["pain", "hurt", "tightness", "pressure", "ache", "sharp", "discomfort"].some(k => normText.includes(k));
     const hasBlood = ["blood", "bleed", "bleeding", "hemorrhage", "red"].some(k => normText.includes(k));
-    const hasEarHead = ["ear", "ears", "head", "skull", "brain", "hearing"].some(k => normText.includes(k));
+    const hasEarHead = ["ear", "ears", "head", "skull", "brain", "hearing", "neck", "spine", "eye", "eyes"].some(k => normText.includes(k));
+    const hasTrauma = ["accident", "injury", "torn", "tear", "broken", "fracture", "wound", "cut", "fall", "hit", "trauma", "crash"].some(k => normText.includes(k));
+
+    if (hasTrauma) {
+      if (hasEarHead || hasChest) {
+        conditions.push({
+          condition: "Acute Trauma / Critical Physical Injury",
+          probability: 0.90,
+          details: "Physical trauma or laceration involving critical anatomical regions (head, neck, ear, eye, or chest). High risk of internal injury, fracture, or severe tissue damage."
+        });
+        recommendations.push("Go to the nearest emergency room immediately for professional wound care and assessment.");
+        recommendations.push("Keep the patient stable and do not manipulate the injured structures.");
+        urgency = "Emergency";
+      } else {
+        conditions.push({
+          condition: "Localized Physical Trauma / Wound",
+          probability: 0.80,
+          details: "Localized physical trauma or laceration to limbs or extremities. Warrants clinical evaluation to rule out deep cuts, fractures, or tendon damage."
+        });
+        recommendations.push("Visit an urgent care center or doctor for examination and dressing.");
+        recommendations.push("Apply a clean compress to manage bleeding and keep the injured area elevated.");
+        urgency = "High";
+      }
+    }
 
     if ((hasChest && hasPain) || ["breathing", "shortness of breath", "breath", "suffocat", "chok"].some(k => normText.includes(k))) {
       conditions.push({
@@ -65,7 +88,7 @@ export default function SymptomsPage() {
       urgency = "Emergency";
     }
 
-    if (hasBlood && hasEarHead) {
+    if (hasBlood && hasEarHead && !hasTrauma) {
       conditions.push({
         condition: "Head Injury / Bleeding from Ear",
         probability: 0.80,

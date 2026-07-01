@@ -84,9 +84,32 @@ def analyze_symptoms(symptoms_text: str, age: int = None, gender: str = None) ->
     has_chest = "chest" in text
     has_pain = any(k in text for k in ["pain", "hurt", "tightness", "pressure", "ache", "sharp", "discomfort"])
     has_blood = any(k in text for k in ["blood", "bleed", "bleeding", "hemorrhage", "red"])
-    has_ear_head = any(k in text for k in ["ear", "ears", "head", "skull", "brain", "hearing"])
+    has_ear_head = any(k in text for k in ["ear", "ears", "head", "skull", "brain", "hearing", "neck", "spine", "eye", "eyes"])
+    has_trauma = any(k in text for k in ["accident", "injury", "torn", "tear", "broken", "fracture", "wound", "cut", "fall", "hit", "trauma", "crash"])
 
-    # 1. Cardiorespiratory Distress / Chest Pain Check (Emergency)
+    # 1. Critical Trauma / Accident check (Emergency / High)
+    if has_trauma:
+        if has_ear_head or has_chest:
+            conditions.append({
+                "condition": "Acute Trauma / Critical Physical Injury",
+                "probability": 0.90,
+                "details": "Physical trauma or laceration involving critical anatomical regions (head, neck, ear, eye, or chest). High risk of internal injury, fracture, or severe tissue damage."
+            })
+            recommendations.append("Go to the nearest emergency room immediately for professional wound care and assessment.")
+            recommendations.append("Keep the patient stable and do not manipulate the injured structures.")
+            urgency = "Emergency"
+        else:
+            conditions.append({
+                "condition": "Localized Physical Trauma / Wound",
+                "probability": 0.80,
+                "details": "Localized physical trauma or laceration to limbs or extremities. Warrants clinical evaluation to rule out deep cuts, fractures, or tendon damage."
+            })
+            recommendations.append("Visit an urgent care center or doctor for examination and dressing.")
+            recommendations.append("Apply a clean compress to manage bleeding and keep the injured area elevated.")
+            if urgency != "Emergency":
+                urgency = "High"
+
+    # 2. Cardiorespiratory Distress / Chest Pain Check (Emergency)
     if (has_chest and has_pain) or any(k in text for k in ["breathing", "shortness of breath", "breath", "suffocat", "chok"]):
         conditions.append({
             "condition": "Acute Cardiorespiratory Distress / Angina",
@@ -97,8 +120,8 @@ def analyze_symptoms(symptoms_text: str, age: int = None, gender: str = None) ->
         recommendations.append("Rest in a seated position. Do not engage in physical activity.")
         urgency = "Emergency"
 
-    # 2. Bleeding from Ears / Head Injury (Emergency)
-    if has_blood and has_ear_head:
+    # 3. Bleeding from Ears / Head Injury (Emergency)
+    if has_blood and has_ear_head and not has_trauma: # skip if already handled by trauma
         conditions.append({
             "condition": "Traumatic Head Injury / Otorrhagia (Eardrum Bleeding)",
             "probability": 0.80,
